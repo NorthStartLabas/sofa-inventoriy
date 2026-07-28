@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthProvider'
 import { useAuth } from './auth/authContext'
 import { SignIn } from './auth/SignIn'
 import { Home } from './screens/Home'
+import { CatalogScreen } from './screens/catalog/CatalogScreen'
 
 function Gate() {
   const { session, loading } = useAuth()
@@ -20,6 +21,7 @@ function Gate() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/catalog" element={<CatalogScreen />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

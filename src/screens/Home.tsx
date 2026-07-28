@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/authContext'
 import { useDisplayName } from '../lib/displayName'
 import { supabase } from '../lib/supabase'
@@ -23,8 +24,15 @@ export function Home() {
     <div className="mx-auto max-w-md px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Kitchen orders</h1>
       <p className="mt-2 text-base text-neutral-600">
-        Phase 1 — the pipeline works. Screens come next.
+        Phase 2 — the Order screen lands next. Fill the Catalog in the meantime.
       </p>
+
+      <Link
+        to="/catalog"
+        className="mt-6 inline-flex min-h-[44px] items-center rounded-lg bg-neutral-900 px-4 text-base font-semibold text-white"
+      >
+        Open Catalog
+      </Link>
 
       <dl className="mt-8 space-y-4">
         <div>
