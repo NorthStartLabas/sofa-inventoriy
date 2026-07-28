@@ -1,18 +1,8 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { redirectUrl, supabase } from '../lib/supabase'
 import { consumeAuthFromUrl } from '../lib/authCallback'
-
-type AuthValue = {
-  session: Session | null
-  /** True until we know whether there's a stored session — avoids a sign-in flash. */
-  loading: boolean
-  callbackError: string | null
-  sendMagicLink: (email: string) => Promise<{ error: string | null }>
-  signOut: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthValue | null>(null)
+import { AuthContext, type AuthValue } from './authContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
@@ -68,10 +58,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export function useAuth(): AuthValue {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>')
-  return ctx
 }

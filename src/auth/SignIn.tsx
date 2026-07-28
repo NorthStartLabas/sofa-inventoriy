@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useAuth } from './AuthProvider'
+import { useAuth } from './authContext'
 
 export function SignIn() {
   const { sendMagicLink, callbackError } = useAuth()

@@ -1,5 +1,6 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { AuthProvider, useAuth } from './auth/AuthProvider'
+import { AuthProvider } from './auth/AuthProvider'
+import { useAuth } from './auth/authContext'
 import { SignIn } from './auth/SignIn'
 import { Home } from './screens/Home'
 

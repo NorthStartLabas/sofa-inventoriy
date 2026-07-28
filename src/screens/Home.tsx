@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '../auth/authContext'
 import { useDisplayName } from '../lib/displayName'
 import { supabase } from '../lib/supabase'
 
