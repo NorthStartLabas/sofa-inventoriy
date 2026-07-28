@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+
+html {
+  /* iOS: don't let landscape rotation inflate our carefully sized text. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  /* Home-screen PWA: keep content clear of the notch and the home indicator. */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #fff;
+  color: #171717;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Wet hands, fast taps — never flash a selection highlight on a control. */
+button {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
