@@ -2,7 +2,9 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { useAuth } from './auth/authContext'
 import { SignIn } from './auth/SignIn'
-import { Home } from './screens/Home'
+import { BasketProvider } from './basket/BasketProvider'
+import { CatalogProvider } from './data/CatalogProvider'
+import { OrderScreen } from './screens/OrderScreen'
 import { CatalogScreen } from './screens/catalog/CatalogScreen'
 
 function Gate() {
@@ -18,12 +20,18 @@ function Gate() {
 
   if (!session) return <SignIn />
 
+  // Inside the gate: the basket can only be read once there's a session to
+  // read it with.
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/catalog" element={<CatalogScreen />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <CatalogProvider>
+      <BasketProvider>
+        <Routes>
+          <Route path="/" element={<OrderScreen />} />
+          <Route path="/catalog" element={<CatalogScreen />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BasketProvider>
+    </CatalogProvider>
   )
 }
 

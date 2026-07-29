@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useCatalog } from '../../data/useCatalog'
+import { useAuth } from '../../auth/authContext'
+import { useCatalogStore } from '../../data/catalogContext'
 import { DishesTab } from './DishesTab'
 import { IngredientsTab } from './IngredientsTab'
 import { LocationsTab } from './LocationsTab'
@@ -10,7 +11,8 @@ const TABS = ['Ingredients', 'Dishes', 'Locations', 'Suppliers'] as const
 type Tab = (typeof TABS)[number]
 
 export function CatalogScreen() {
-  const store = useCatalog()
+  const store = useCatalogStore()
+  const { signOut } = useAuth()
   const [tab, setTab] = useState<Tab>('Ingredients')
 
   return (
@@ -19,7 +21,14 @@ export function CatalogScreen() {
         <Link to="/" className="min-h-[44px] py-2 text-base text-neutral-500">
           ← Order
         </Link>
-        <h1 className="text-lg font-semibold">Catalog</h1>
+        <h1 className="flex-1 text-lg font-semibold">Catalog</h1>
+        <button
+          type="button"
+          onClick={signOut}
+          className="min-h-[44px] text-base text-neutral-500"
+        >
+          Sign out
+        </button>
       </header>
 
       <div className="sticky top-0 z-40 flex gap-1 border-b border-neutral-200 bg-white px-2">
