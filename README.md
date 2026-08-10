@@ -42,9 +42,9 @@ One-time setup:
 
 ## Build phases
 
-1. **Scaffold, auth, deploy pipeline** ← current
-2. Schema migration + Catalog screen
-3. Order screen (Location view), basket, steppers
-4. Basket screen, WhatsApp export, finish order, history
+1. ~~Scaffold, auth, deploy pipeline~~
+2. ~~Schema migration + Catalog screen~~
+3. ~~Order screen (Location view), basket, steppers~~
+4. **Basket screen, WhatsApp export, finish order, history** ← current
 5. Dish and All views
 6. Realtime sync, missing-item hints, location sweep, offline retry queue, PWA
