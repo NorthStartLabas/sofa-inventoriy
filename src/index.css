@@ -1,4 +1,30 @@
 @import 'tailwindcss';
+/* Self-hosted: kitchen wifi is bad and a webfont request that hangs is a
+   screen of invisible text. One face, one weight, bundled with the app. */
+@import '@fontsource/ibm-plex-sans-condensed/600.css';
+
+/* ---------------------------------------------------------------------------
+   A kitchen is cool-toned — steel, white tile, hard overhead light — so the
+   ground is a cool white rather than a warm paper cream.
+
+   Three colours do all the work, because three is what stays legible under
+   glare with wet hands and no time: ink to read, tape to mark, flag to warn.
+   Tape blue is the accent because blue painter's tape is how a kitchen labels
+   anything it has claimed, which is exactly what a row in the basket is.
+   --------------------------------------------------------------------------- */
+@theme {
+  --color-tile: #f1f4f6;
+  --color-surface: #ffffff;
+  --color-ink: #14181a;
+  --color-steel: #566269;
+  --color-rule: #d3dade;
+  --color-tape: #1257c7;
+  --color-tape-wash: #e2ecfb;
+  --color-flag: #a8480b;
+  --color-flag-wash: #fbede2;
+
+  --font-display: 'IBM Plex Sans Condensed', ui-sans-serif, system-ui, sans-serif;
+}
 
 html {
   /* iOS: don't let landscape rotation inflate our carefully sized text. */
@@ -9,9 +35,8 @@ body {
   margin: 0;
   /* Home-screen PWA: keep content clear of the notch and the home indicator. */
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  background: #fff;
-  color: #171717;
+  background: var(--color-tile);
+  color: var(--color-ink);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -20,4 +45,29 @@ body {
 button {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+}
+
+/* The station label: condensed caps, the way a rack or a shelf gets labelled. */
+.label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* Keyboard focus has to be visible without being loud enough to read as an
+   error mid-service. */
+:focus-visible {
+  outline: 2px solid var(--color-tape);
+  outline-offset: 2px;
+}
+
+/* You open this to add butter, not to watch it move. The only transitions are
+   the ones that confirm a tap landed. */
+@media (prefers-reduced-motion: no-preference) {
+  .mark {
+    transition:
+      background-color 120ms ease-out,
+      border-color 120ms ease-out;
+  }
 }

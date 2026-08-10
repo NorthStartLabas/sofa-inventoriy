@@ -16,31 +16,29 @@ export function CatalogScreen() {
   const [tab, setTab] = useState<Tab>('Ingredients')
 
   return (
-    <div className="mx-auto min-h-screen max-w-2xl">
-      <header className="flex items-center gap-3 px-4 py-3">
-        <Link to="/" className="min-h-[44px] py-2 text-base text-neutral-500">
+    <div className="mx-auto min-h-screen max-w-2xl bg-surface">
+      <header className="flex items-center gap-4 bg-tile px-4 py-3">
+        <Link to="/" className="min-h-[44px] py-2 text-base text-steel">
           ← Order
         </Link>
-        <h1 className="flex-1 text-lg font-semibold">Catalog</h1>
+        <h1 className="label flex-1 text-xl">Catalog</h1>
         <button
           type="button"
           onClick={signOut}
-          className="min-h-[44px] text-base text-neutral-500"
+          className="min-h-[44px] text-base text-steel"
         >
           Sign out
         </button>
       </header>
 
-      <div className="sticky top-0 z-40 flex gap-1 border-b border-neutral-200 bg-white px-2">
+      <div className="sticky top-0 z-40 flex border-y border-rule bg-surface px-1">
         {TABS.map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`min-h-[44px] flex-1 border-b-2 px-1 text-base font-medium ${
-              tab === t
-                ? 'border-neutral-900 text-neutral-900'
-                : 'border-transparent text-neutral-500'
+            className={`mark min-h-[44px] flex-1 border-b-2 text-base font-medium ${
+              tab === t ? 'border-tape text-tape' : 'border-transparent text-steel'
             }`}
           >
             {t}
@@ -49,13 +47,13 @@ export function CatalogScreen() {
       </div>
 
       {store.error && (
-        <p className="border-b border-red-200 bg-red-50 px-4 py-3 text-base text-red-800">
+        <p className="border-b border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
           {store.error}
         </p>
       )}
 
       {store.loading ? (
-        <p className="px-4 py-8 text-base text-neutral-500">Loading…</p>
+        <p className="px-4 py-8 text-base text-steel">Loading…</p>
       ) : (
         <>
           {tab === 'Ingredients' && <IngredientsTab store={store} />}

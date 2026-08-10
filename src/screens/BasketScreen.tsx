@@ -52,27 +52,27 @@ export function BasketScreen() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl pb-40">
-      <header className="flex items-center gap-2 px-3 py-2">
-        <Link to="/" className="h-11 px-1 text-base leading-[44px] text-neutral-500">
+    <div className="mx-auto min-h-screen max-w-2xl bg-surface pb-40">
+      <header className="flex items-center gap-4 bg-tile px-3 py-2">
+        <Link to="/" className="h-11 px-1 text-base leading-[44px] text-steel">
           ← Order
         </Link>
-        <h1 className="flex-1 text-lg font-semibold">Basket</h1>
-        <Link to="/history" className="h-11 px-2 text-base leading-[44px] text-neutral-500">
+        <h1 className="label flex-1 text-xl">Basket</h1>
+        <Link to="/history" className="h-11 px-2 text-base leading-[44px] text-steel">
           History
         </Link>
       </header>
 
       {(failure ?? basket.error) && (
-        <p className="border-y border-red-200 bg-red-50 px-4 py-3 text-base text-red-800">
+        <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
           {failure ?? basket.error}
         </p>
       )}
 
       {loading || basket.loading ? (
-        <p className="px-4 py-8 text-base text-neutral-500">Loading…</p>
+        <p className="px-4 py-8 text-base text-steel">Loading…</p>
       ) : lineCount === 0 ? (
-        <p className="px-4 py-8 text-base text-neutral-500">
+        <p className="px-4 py-8 text-base text-steel">
           Nothing in the basket yet.{' '}
           <Link to="/" className="underline underline-offset-4">
             Walk the route
@@ -82,27 +82,27 @@ export function BasketScreen() {
       ) : (
         groups.map((group) => (
           <section key={group.supplierId ?? 'none'}>
-            <h2 className="sticky top-0 z-10 border-y border-neutral-200 bg-neutral-100 px-4 py-2">
-              <span className="text-base font-semibold">{group.supplierName}</span>
-              <span className="ml-2 text-base text-neutral-500">{group.lines.length}</span>
+            <h2 className="sticky top-0 z-10 border-y border-rule bg-tile px-4 py-2">
+              <span className="label text-base text-ink">{group.supplierName}</span>
+              <span className="ml-2 text-base text-steel tabular-nums">{group.lines.length}</span>
             </h2>
 
             <ul>
               {group.lines.map((line) => (
                 <li
                   key={line.ingredientId}
-                  className="flex items-center gap-2 border-b border-neutral-200 py-1.5 pr-2 pl-4"
+                  className="flex items-center gap-2 border-b border-rule bg-surface py-1.5 pr-2 pl-4"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-semibold">
+                    <p className="truncate text-base font-semibold text-ink">
                       {line.name}
                       {/* Archived stock shouldn't normally be ordered, but it
                           can sit in the basket from before it was archived. */}
                       {line.archived && (
-                        <span className="ml-2 font-normal text-amber-700">archived</span>
+                        <span className="label ml-2 text-base font-normal text-flag">archived</span>
                       )}
                     </p>
-                    <p className="text-base text-neutral-500">{line.addedBy ?? ''}</p>
+                    <p className="text-base text-steel">{line.addedBy ?? ''}</p>
                   </div>
 
                   <Stepper
@@ -118,14 +118,14 @@ export function BasketScreen() {
       )}
 
       {lineCount > 0 && (
-        <div className="fixed inset-x-0 bottom-0 border-t border-neutral-200 bg-white/95 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 border-t border-rule bg-surface/95 backdrop-blur">
           <div className="mx-auto max-w-2xl px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {confirming ? (
               <>
-                <p className="text-base font-semibold">
+                <p className="text-base font-semibold text-ink">
                   Send {lineCount} {lineCount === 1 ? 'item' : 'items'} and empty the basket?
                 </p>
-                <p className="mt-1 text-base text-neutral-500">
+                <p className="mt-1 text-base text-steel">
                   It stays in History either way.
                 </p>
                 <div className="mt-3 flex gap-2">
@@ -133,7 +133,7 @@ export function BasketScreen() {
                     type="button"
                     onClick={finish}
                     disabled={sending}
-                    className={`${primaryButton} flex-1`}
+                    className={`${primaryButton} label flex-1`}
                   >
                     {sending ? 'Finishing…' : 'Yes, finish it'}
                   </button>
@@ -163,7 +163,7 @@ export function BasketScreen() {
                 <button
                   type="button"
                   onClick={() => setConfirming(true)}
-                  className={`${primaryButton} flex-1`}
+                  className={`${primaryButton} label flex-1`}
                 >
                   Finish
                 </button>

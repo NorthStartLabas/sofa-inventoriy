@@ -43,9 +43,9 @@ export function DishView() {
 
   if (catalog.dishes.length === 0) {
     return (
-      <p className="px-4 py-8 text-base text-neutral-500">
+      <p className="px-4 py-8 text-base text-steel">
         No dishes yet.{' '}
-        <Link to="/catalog" className="underline underline-offset-4">
+        <Link to="/catalog" className="text-tape underline underline-offset-4">
           Add one in the catalog
         </Link>
         .
@@ -62,26 +62,26 @@ export function DishView() {
 
         return (
           <section key={dish.id}>
-            <h2 className="border-b border-neutral-200">
+            <h2 className="border-b border-rule bg-tile">
               <button
                 type="button"
                 onClick={() => toggle(dish.id)}
                 className="flex min-h-[44px] w-full items-baseline gap-2 px-4 py-2 text-left"
                 aria-expanded={isOpen}
               >
-                <span className="text-base font-semibold">{dish.name}</span>
-                <span className="flex-1 text-base text-neutral-500">
+                <span className="label text-base text-ink">{dish.name}</span>
+                <span className="flex-1 text-base text-steel tabular-nums">
                   {inBasket > 0 ? `${inBasket} of ${items.length}` : items.length}
                 </span>
-                <span className="text-base text-neutral-400">{isOpen ? '▾' : '▸'}</span>
+                <span className="text-base text-steel">{isOpen ? '▾' : '▸'}</span>
               </button>
             </h2>
 
             {isOpen &&
               (items.length === 0 ? (
-                <p className="px-4 py-4 text-base text-neutral-500">
+                <p className="bg-surface px-4 py-4 text-base text-steel">
                   Nothing linked to this dish yet.{' '}
-                  <Link to="/catalog" className="underline underline-offset-4">
+                  <Link to="/catalog" className="text-tape underline underline-offset-4">
                     Pick its ingredients
                   </Link>
                   .

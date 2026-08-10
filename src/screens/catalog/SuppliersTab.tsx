@@ -57,14 +57,14 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
 
   return (
     <div className="px-4 py-4">
-      <p className="mb-4 text-base text-neutral-500">
+      <p className="mb-4 text-base text-steel">
         Suppliers are only used to group the basket when you send the order.
       </p>
 
       {catalog.suppliers.map((supplier) => (
         <div
           key={supplier.id}
-          className="flex items-center gap-2 border-b border-neutral-200 py-2"
+          className="flex items-center gap-2 border-b border-rule py-2"
         >
           {editing === supplier.id ? (
             <>
@@ -90,7 +90,7 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
                 className="min-h-[44px] flex-1 text-left text-base font-medium"
               >
                 {supplier.name}
-                <span className="ml-2 font-normal text-neutral-400">{countFor(supplier.id)}</span>
+                <span className="ml-2 font-normal text-steel">{countFor(supplier.id)}</span>
               </button>
               <button type="button" onClick={() => remove(supplier)} className={dangerButton}>
                 Delete
@@ -101,7 +101,7 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
       ))}
 
       {catalog.suppliers.length === 0 && (
-        <p className="py-6 text-base text-neutral-500">No suppliers yet.</p>
+        <p className="py-6 text-base text-steel">No suppliers yet.</p>
       )}
 
       <div className="mt-6 flex gap-2">

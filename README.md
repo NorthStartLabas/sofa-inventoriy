@@ -52,4 +52,11 @@ One-time setup:
 3. ~~Order screen (Location view), basket, steppers~~
 4. ~~Basket screen, WhatsApp export, finish order, history~~
 5. ~~Dish and All views~~
-6. **Realtime sync, missing-item hints, location sweep, offline retry queue, PWA** ← current
+
+The app is feature-complete. A sixth phase — realtime sync, missing-item hints,
+location sweep, offline retry queue, PWA — was planned and **deliberately dropped**.
+Don't reinstate it without asking.
+
+The one thing it would have fixed: two phones don't sync live. If both people add
+the same ingredient within a minute, the later write replaces the earlier quantity
+rather than merging. Fine for two people who rarely order at the same moment.

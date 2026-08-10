@@ -11,6 +11,9 @@ type Props = {
  * Big −/+ buttons, no keyboard. Tapping the number itself opens a numeric
  * field as a deliberate secondary path — the primary control has to work with
  * wet hands and no aim.
+ *
+ * Deliberately plain. This is the most-touched control in the app, and a
+ * clever one is a liability when you can't look properly.
  */
 export function Stepper({ quantity, unit, onChange }: Props) {
   const [typing, setTyping] = useState(false)
@@ -37,7 +40,7 @@ export function Stepper({ quantity, unit, onChange }: Props) {
         aria-label="Decrease"
         disabled={quantity <= 0}
         onClick={() => onChange(quantity - 1)}
-        className="h-11 w-11 shrink-0 rounded-lg border border-neutral-300 text-2xl leading-none font-medium text-neutral-900 disabled:border-neutral-200 disabled:text-neutral-300"
+        className="mark h-11 w-11 shrink-0 rounded-md border border-rule bg-surface text-2xl leading-none font-medium text-ink disabled:border-rule/60 disabled:bg-transparent disabled:text-rule"
       >
         −
       </button>
@@ -55,24 +58,24 @@ export function Stepper({ quantity, unit, onChange }: Props) {
             if (e.key === 'Escape') setTyping(false)
           }}
           autoFocus
-          className="h-11 w-16 rounded-lg border border-neutral-900 text-center text-base outline-none"
+          className="h-11 w-16 rounded-md border-2 border-tape bg-surface text-center text-base tabular-nums outline-none"
         />
       ) : (
         <button
           type="button"
           aria-label="Type a quantity"
+          className="h-11 w-16 shrink-0 text-center text-base font-semibold tabular-nums"
           onClick={() => {
             setDraft(quantity > 0 ? formatQuantity(quantity) : '')
             setTyping(true)
           }}
-          className="h-11 w-16 shrink-0 text-center text-base font-semibold tabular-nums"
         >
           {/* Empty rather than a dash at zero — a second grey dash next to the
               disabled minus just reads as two broken buttons. */}
           {quantity > 0 && (
             <>
-              {formatQuantity(quantity)}
-              {unit && <span className="ml-1 font-normal text-neutral-500">{unit}</span>}
+              <span className="text-tape">{formatQuantity(quantity)}</span>
+              {unit && <span className="ml-1 font-normal text-steel">{unit}</span>}
             </>
           )}
         </button>
@@ -82,7 +85,7 @@ export function Stepper({ quantity, unit, onChange }: Props) {
         type="button"
         aria-label="Increase"
         onClick={() => onChange(quantity + 1)}
-        className="h-11 w-11 shrink-0 rounded-lg border border-neutral-300 text-2xl leading-none font-medium text-neutral-900"
+        className="mark h-11 w-11 shrink-0 rounded-md border border-rule bg-surface text-2xl leading-none font-medium text-ink"
       >
         +
       </button>

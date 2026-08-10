@@ -38,27 +38,27 @@ export function HistoryScreen() {
   const ingredient = (id: string) => catalog.ingredients.find((i) => i.id === id)
 
   return (
-    <div className="mx-auto max-w-2xl pb-16">
-      <header className="flex items-center gap-2 px-3 py-2">
-        <Link to="/basket" className="h-11 px-1 text-base leading-[44px] text-neutral-500">
+    <div className="mx-auto min-h-screen max-w-2xl bg-surface pb-16">
+      <header className="flex items-center gap-4 bg-tile px-3 py-2">
+        <Link to="/basket" className="h-11 px-1 text-base leading-[44px] text-steel">
           ← Basket
         </Link>
-        <h1 className="flex-1 text-lg font-semibold">History</h1>
-        <Link to="/" className="h-11 px-2 text-base leading-[44px] text-neutral-500">
+        <h1 className="label flex-1 text-xl">History</h1>
+        <Link to="/" className="h-11 px-2 text-base leading-[44px] text-steel">
           Order
         </Link>
       </header>
 
       {error && (
-        <p className="border-y border-red-200 bg-red-50 px-4 py-3 text-base text-red-800">
+        <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
           {error}
         </p>
       )}
 
       {orders === null ? (
-        <p className="px-4 py-8 text-base text-neutral-500">Loading…</p>
+        <p className="px-4 py-8 text-base text-steel">Loading…</p>
       ) : orders.length === 0 ? (
-        <p className="px-4 py-8 text-base text-neutral-500">
+        <p className="px-4 py-8 text-base text-steel">
           No orders sent yet. They show up here once you finish one.
         </p>
       ) : (
@@ -68,19 +68,19 @@ export function HistoryScreen() {
             const total = order.order_lines.length
 
             return (
-              <li key={order.id} className="border-b border-neutral-200">
+              <li key={order.id} className="border-b border-rule">
                 <button
                   type="button"
                   onClick={() => setExpanded(open ? null : order.id)}
                   className="flex min-h-[44px] w-full items-center gap-2 px-4 py-2 text-left"
                 >
-                  <span className="flex-1 text-base font-medium">
+                  <span className="flex-1 text-base font-medium tabular-nums text-ink">
                     {sentAtLabel(order.sent_at)}
                     {order.sent_by && (
-                      <span className="ml-2 font-normal text-neutral-500">{order.sent_by}</span>
+                      <span className="ml-2 font-normal text-steel">{order.sent_by}</span>
                     )}
                   </span>
-                  <span className="text-base text-neutral-500">
+                  <span className="label text-base text-steel tabular-nums">
                     {total} {total === 1 ? 'item' : 'items'}
                   </span>
                 </button>
@@ -94,13 +94,13 @@ export function HistoryScreen() {
                           key={line.id}
                           className="flex items-baseline gap-2 px-4 py-1 text-base"
                         >
-                          <span className="flex-1 text-neutral-700">
+                          <span className="flex-1 text-ink">
                             {found?.name ?? 'Removed ingredient'}
                           </span>
                           <span className="tabular-nums">
                             {formatQuantity(line.quantity)}
                             {found?.unit && (
-                              <span className="ml-1 text-neutral-500">{found.unit}</span>
+                              <span className="ml-1 text-steel">{found.unit}</span>
                             )}
                           </span>
                         </li>

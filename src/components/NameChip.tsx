@@ -24,7 +24,7 @@ export function NameChip() {
           }
         }}
         placeholder="Your name"
-        className="h-11 w-28 rounded-lg border border-neutral-900 px-2 text-base outline-none"
+        className="h-11 w-28 rounded-md border border-tape px-2 text-base outline-none"
       />
     )
   }
@@ -36,7 +36,7 @@ export function NameChip() {
         setDraft(name)
         setEditing(true)
       }}
-      className="h-11 rounded-lg px-2 text-base text-neutral-500"
+      className="h-11 rounded-md px-2 text-base text-steel"
     >
       {name || 'Set name'}
     </button>

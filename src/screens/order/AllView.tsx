@@ -25,7 +25,7 @@ export function AllView() {
   return (
     <>
       {/* top-11 clears the view switcher, which is sticky above it. */}
-      <div className="sticky top-11 z-20 flex items-center gap-2 border-b border-neutral-200 bg-white px-3 py-2">
+      <div className="sticky top-11 z-20 flex items-center gap-2 border-b border-rule bg-tile px-3 py-2">
         <input
           type="text"
           value={query}
@@ -40,7 +40,7 @@ export function AllView() {
             type="button"
             onClick={() => setQuery('')}
             aria-label="Clear search"
-            className="h-11 w-11 shrink-0 rounded-lg border border-neutral-300 text-base text-neutral-500"
+            className="h-11 w-11 shrink-0 rounded-md border border-rule bg-surface text-base text-steel"
           >
             ✕
           </button>
@@ -48,15 +48,15 @@ export function AllView() {
       </div>
 
       {nothingAtAll ? (
-        <p className="px-4 py-8 text-base text-neutral-500">
+        <p className="px-4 py-8 text-base text-steel">
           Nothing in the catalog yet.{' '}
-          <Link to="/catalog" className="underline underline-offset-4">
+          <Link to="/catalog" className="text-tape underline underline-offset-4">
             Add your ingredients
           </Link>
           .
         </p>
       ) : items.length === 0 ? (
-        <p className="px-4 py-8 text-base text-neutral-500">
+        <p className="px-4 py-8 text-base text-steel">
           No ingredient matches “{query.trim()}”.
         </p>
       ) : (

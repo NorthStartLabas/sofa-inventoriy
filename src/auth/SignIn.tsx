@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { primaryButton } from '../components/styles'
 import { useAuth } from './authContext'
 
 export function SignIn() {
@@ -21,28 +22,37 @@ export function SignIn() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
-      <h1 className="text-3xl font-semibold tracking-tight">Kitchen orders</h1>
-      <p className="mt-2 text-base text-neutral-600">
-        Enter your email and we'll send you a link to sign in.
-      </p>
+      {/* The same rail the route runs on, used here as the cover of the list. */}
+      <div className="border-l-2 border-tape pl-4">
+        <h1 className="label text-5xl leading-[0.95] tracking-[0.005em] text-ink">
+          Kitchen
+          <br />
+          orders
+        </h1>
+        <p className="mt-3 text-base text-steel">Two people, one list.</p>
+      </div>
 
       {sent ? (
-        <div className="mt-8 rounded-xl bg-neutral-100 p-5">
-          <p className="text-base font-medium">Link sent to {email}</p>
-          <p className="mt-1 text-base text-neutral-600">
+        <div className="mt-10 border-l-2 border-rule pl-4">
+          <p className="text-base font-semibold text-ink">Link sent to {email}</p>
+          <p className="mt-1 text-base text-steel">
             Open it on this phone, in this browser, so the session lands in the right place.
           </p>
           <button
             type="button"
             onClick={() => setSent(false)}
-            className="mt-4 min-h-[44px] text-base font-medium text-neutral-900 underline underline-offset-4"
+            className="mt-4 min-h-[44px] text-base font-medium text-tape underline underline-offset-4"
           >
             Use a different email
           </button>
         </div>
       ) : (
-        <form onSubmit={submit} className="mt-8">
+        <form onSubmit={submit} className="mt-10">
+          <label htmlFor="email" className="label text-base text-steel">
+            Email
+          </label>
           <input
+            id="email"
             type="email"
             inputMode="email"
             autoComplete="email"
@@ -52,12 +62,12 @@ export function SignIn() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@restaurant.com"
-            className="min-h-[52px] w-full rounded-xl border border-neutral-300 px-4 text-base outline-none focus:border-neutral-900"
+            className="mt-1 min-h-[52px] w-full rounded-md border border-rule bg-surface px-4 text-base text-ink outline-none placeholder:text-steel focus:border-tape"
           />
           <button
             type="submit"
             disabled={sending}
-            className="mt-3 min-h-[52px] w-full rounded-xl bg-neutral-900 text-base font-semibold text-white disabled:opacity-50"
+            className={`${primaryButton} label mt-3 min-h-[52px] w-full`}
           >
             {sending ? 'Sending…' : 'Send me a link'}
           </button>
@@ -65,7 +75,9 @@ export function SignIn() {
       )}
 
       {(error ?? callbackError) && (
-        <p className="mt-4 text-base text-red-700">{error ?? callbackError}</p>
+        <p className="mt-4 border-l-2 border-flag pl-4 text-base text-flag">
+          {error ?? callbackError}
+        </p>
       )}
     </div>
   )

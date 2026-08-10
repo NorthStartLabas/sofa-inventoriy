@@ -83,7 +83,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
 
   return (
     <div className="px-4 py-4">
-      <p className="mb-4 text-base text-neutral-500">
+      <p className="mb-4 text-base text-steel">
         A dish is a checklist of what needs to be in the house for it — not a recipe.
       </p>
 
@@ -92,7 +92,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
         const open = expanded === dish.id
 
         return (
-          <div key={dish.id} className="border-b border-neutral-200">
+          <div key={dish.id} className="border-b border-rule">
             <div className="flex items-center gap-2 py-2">
               {renaming === dish.id ? (
                 <>
@@ -115,7 +115,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
                     className="min-h-[44px] flex-1 text-left text-base font-medium"
                   >
                     {dish.name}
-                    <span className="ml-2 font-normal text-neutral-400">{chosen.length}</span>
+                    <span className="ml-2 font-normal text-steel">{chosen.length}</span>
                   </button>
                   <button
                     type="button"
@@ -144,7 +144,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
 
                   return (
                     <div key={location.id} className="mt-2">
-                      <p className="text-base font-semibold text-neutral-500">{location.name}</p>
+                      <p className="label text-base text-steel">{location.name}</p>
                       {items.map((ingredient) => (
                         <label
                           key={ingredient.id}
@@ -158,7 +158,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
                           />
                           {ingredient.name}
                           {ingredient.unit && (
-                            <span className="text-neutral-400">{ingredient.unit}</span>
+                            <span className="text-steel">{ingredient.unit}</span>
                           )}
                         </label>
                       ))}
@@ -172,7 +172,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
       })}
 
       {catalog.dishes.length === 0 && (
-        <p className="py-6 text-base text-neutral-500">No dishes yet.</p>
+        <p className="py-6 text-base text-steel">No dishes yet.</p>
       )}
 
       <div className="mt-6 flex gap-2">

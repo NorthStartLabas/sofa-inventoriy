@@ -107,10 +107,35 @@ gate anything.
 
 ## UI conventions
 
-Tailwind v4 via `@tailwindcss/vite`; the only CSS file is `src/index.css` (`@import 'tailwindcss'`
-plus a few body/safe-area rules). Shared control classes live in `src/components/styles.ts` — reuse
+Tailwind v4 via `@tailwindcss/vite`; the only CSS file is `src/index.css`, which owns the design
+tokens in an `@theme` block. Shared control classes live in `src/components/styles.ts` — reuse
 `input`, `primaryButton`, `secondaryButton`, `quietButton`, `dangerButton` rather than re-deriving
 them.
+
+**The palette is three colours, and that's deliberate** — three is what survives glare in a bright
+room. `ink` reads, `tape` marks, `flag` warns, over a cool `tile` ground (kitchens are steel and
+white tile, not warm paper). Use the tokens, never raw Tailwind palette names: `text-ink`,
+`text-steel`, `border-rule`, `bg-tile`, `bg-surface`, `text-tape`, `bg-tape-wash`, `text-flag`,
+`bg-flag-wash`.
+
+A row in the basket fills `tape-wash`, not green. Blue painter's tape is how a kitchen labels
+anything it has claimed, which is what a basket row is; it also keeps the whole app to three
+colours. The state carries on four signals anyway (fill, weight, visible quantity, live minus
+button), so colour isn't load-bearing. **Every token pair clears WCAG AA — check any new pair before
+using it**, worst current case is `flag` on `tape-wash` at 4.90.
+
+**Type.** Body is system-ui: fast, no FOUT on kitchen wifi, best at 16px. The `.label` class (IBM
+Plex Sans Condensed, caps, tracked) marks **things in the kitchen** — a location, a supplier, a
+dish, a screen title. Not navigation: four condensed caps words don't fit 390px, which is why both
+tab rows are sentence case. The face is bundled via `@fontsource`, never fetched at runtime.
+
+**Never go below `text-base`.** It's the wet-hands floor and it stops iOS zooming on focus. Every
+tap target clears 44px.
+
+**The route rail** — the tape-coloured rule down the left of `RouteView`, faint between stops and
+solid at each location — belongs to that view alone. Route is the only one of the three whose order
+means something in the room, so it's the only one that gets a structural device saying so. Don't
+add it to Dish or All; there it would be decoration.
 
 `ReorderList` uses pointer events, not HTML5 drag-and-drop, which doesn't fire on touch at all.
 Drag handles need `touch-none`; measurements are in document space so page scroll mid-drag doesn't

@@ -16,21 +16,23 @@ type Props = {
  * Renders an <li>, so the caller supplies the <ul>.
  */
 export function IngredientRow({ ingredient, quantity, subtitle, onChange }: Props) {
+  const inBasket = quantity > 0
+
   return (
     <li
-      className={`flex items-center gap-2 border-b border-neutral-200 py-1.5 pr-2 pl-4 ${
-        quantity > 0 ? 'bg-emerald-50' : ''
+      className={`mark flex items-center gap-2 border-b border-rule py-1.5 pr-2 pl-4 ${
+        inBasket ? 'bg-tape-wash' : 'bg-surface'
       }`}
     >
       <div className="min-w-0 flex-1">
-        <p className={`truncate text-base ${quantity > 0 ? 'font-semibold' : 'font-medium'}`}>
+        <p className={`truncate text-base ${inBasket ? 'font-semibold' : 'font-medium'}`}>
           {ingredient.name}
           {ingredient.archived && (
-            <span className="ml-2 font-normal text-amber-700">archived</span>
+            <span className="label ml-2 text-base text-flag">archived</span>
           )}
         </p>
         {/* Kept even when empty so rows stay the same height down the list. */}
-        <p className="text-base text-neutral-500">{subtitle}</p>
+        <p className="truncate text-base text-steel">{subtitle}</p>
       </div>
 
       <Stepper quantity={quantity} unit={ingredient.unit} onChange={onChange} />

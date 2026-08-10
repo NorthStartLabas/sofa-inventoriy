@@ -4,7 +4,14 @@ import { IngredientRow } from '../../components/IngredientRow'
 import { useCatalogStore } from '../../data/catalogContext'
 import { isVisibleInOrder } from '../../lib/orderView'
 
-/** The walking route: locations in their dragged order, ingredients in theirs. */
+/**
+ * The walking route: locations in their dragged order, ingredients in theirs.
+ *
+ * The rail down the left is the route itself — faint as you walk, solid at each
+ * stop. It belongs to this view alone: Route is the only one of the three whose
+ * order actually means something in the room, so it's the only one that earns a
+ * structural device saying so.
+ */
 export function RouteView() {
   const { catalog } = useCatalogStore()
   const basket = useBasket()
@@ -20,11 +27,11 @@ export function RouteView() {
 
   if (sections.length === 0) {
     return (
-      <p className="px-4 py-8 text-base text-neutral-500">
+      <p className="px-4 py-8 text-base text-steel">
         {catalog.locations.length === 0
           ? 'Nothing in the catalog yet. '
           : 'No ingredients on the route yet. '}
-        <Link to="/catalog" className="underline underline-offset-4">
+        <Link to="/catalog" className="text-tape underline underline-offset-4">
           Open the catalog
         </Link>
         .
@@ -38,12 +45,12 @@ export function RouteView() {
         const inBasket = items.filter((i) => basket.items.has(i.id)).length
 
         return (
-          <section key={location.id}>
+          <section key={location.id} className="border-l-[3px] border-tape/30">
             {/* top-11 clears the view switcher, which is sticky above it. */}
-            <h2 className="sticky top-11 z-10 flex items-baseline gap-2 border-y border-neutral-200 bg-neutral-100 px-4 py-2">
-              <span className="text-base font-semibold">{location.name}</span>
+            <h2 className="sticky top-11 z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-rule border-l-tape bg-tile px-4 py-2">
+              <span className="label text-base text-ink">{location.name}</span>
               {inBasket > 0 && (
-                <span className="text-base text-neutral-500">
+                <span className="text-base text-steel tabular-nums">
                   {inBasket} of {items.length}
                 </span>
               )}
