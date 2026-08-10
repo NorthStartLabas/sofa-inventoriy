@@ -17,8 +17,13 @@ export function LocationsTab({ store }: { store: CatalogStore }) {
   const [draft, setDraft] = useState('')
 
   const locations = catalog.locations
-  const countFor = (id: string) =>
-    catalog.ingredients.filter((i) => i.location_id === id && !i.archived).length
+
+  // Counted separately because only the *total* decides whether delete works —
+  // showing the active count alone made a location read "0" and still refuse.
+  const countsFor = (id: string) => {
+    const here = catalog.ingredients.filter((i) => i.location_id === id)
+    return { active: here.filter((i) => !i.archived).length, archived: here.filter((i) => i.archived).length }
+  }
 
   function reorder(ids: string[]) {
     void mutate(
@@ -102,7 +107,9 @@ export function LocationsTab({ store }: { store: CatalogStore }) {
                 >
                   {location.name}
                   <span className="ml-2 font-normal text-neutral-400">
-                    {countFor(location.id)}
+                    {countsFor(location.id).active}
+                    {countsFor(location.id).archived > 0 &&
+                      ` +${countsFor(location.id).archived} archived`}
                   </span>
                 </button>
                 <button type="button" onClick={() => remove(location)} className={dangerButton}>
@@ -134,7 +141,7 @@ export function LocationsTab({ store }: { store: CatalogStore }) {
       </div>
 
       <p className={`${quietButton} px-0`}>
-        Deleting a location only works once nothing lives there.
+        Deleting a location only works once nothing lives there — archived included.
       </p>
     </div>
   )

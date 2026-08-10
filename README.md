@@ -22,6 +22,11 @@ repo name so the dev server mirrors production.
 Only the **publishable** (anon) key goes in `.env`. The secret/service_role key bypasses
 Row Level Security and must never appear in this repo or the bundle.
 
+Run each file in `supabase/migrations/` once, in order, in the Supabase SQL editor.
+
+**Signups must stay disabled** (Authentication → Sign In / Providers). Every table is
+readable and writable by any signed-in user, so an open signup form is an open database.
+
 ## Deployment
 
 Push to `main`. `.github/workflows/deploy.yml` builds and publishes to GitHub Pages,
@@ -45,6 +50,6 @@ One-time setup:
 1. ~~Scaffold, auth, deploy pipeline~~
 2. ~~Schema migration + Catalog screen~~
 3. ~~Order screen (Location view), basket, steppers~~
-4. **Basket screen, WhatsApp export, finish order, history** ← current
-5. Dish and All views
+4. ~~Basket screen, WhatsApp export, finish order, history~~
+5. **Dish and All views** ← current
 6. Realtime sync, missing-item hints, location sweep, offline retry queue, PWA

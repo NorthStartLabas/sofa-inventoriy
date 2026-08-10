@@ -36,7 +36,14 @@ style as new numbered files.
 Permission model: every table has RLS on with a single `authenticated_all` policy — `for all to
 authenticated using (true)`. There are no roles and no per-user ownership. **This is only safe while
 signups are disabled in Supabase Auth**, since "authenticated" would otherwise mean "anyone". Don't
-add user-scoped logic expecting `auth.uid()` to be meaningful.
+add user-scoped logic expecting `auth.uid()` to be meaningful. Signups were open for a while and the
+whole database was reachable by anyone who found the URL; `shouldCreateUser: false` on
+`signInWithOtp` is the client-side half of that fix, and it must stay.
+
+`finish_order(p_sent_by)` (migration `0002`) is the only server-side function. It writes the order,
+copies the basket into `order_lines`, and empties `basket_items` in one call so a phone that drops
+signal can't clear the basket without recording it; an empty basket raises and rolls the order row
+back. It is `security invoker`, so RLS still applies and it grants nothing extra.
 
 Two deletion rules encode intent: `order_lines.ingredient_id` is `on delete restrict` and ingredients
 carry an `archived` flag — history must keep resolving, so archive ingredients instead of deleting.
@@ -59,11 +66,15 @@ hook. Follow the pattern when adding providers.
 - `useCatalog` (`src/data/useCatalog.ts`) — one shared fetch of all five catalog tables. Edited by
   one person at a time, so `mutate(optimistic, persist)` applies the change locally and, on failure,
   surfaces an error and re-reads the server rather than reconciling. `run(work)` is the variant for
-  inserts, where the id only exists after the server replies.
+  inserts, where the id only exists after the server replies. `getCatalog()` returns the catalog as
+  of *now* rather than as of the last render — needed by any handler that derives its write from the
+  current set, because React runs state updaters during render, long after the request went out.
 - `BasketProvider` (`src/basket/BasketProvider.tsx`) — a `Map<ingredient_id, BasketItem>` with a
   400ms per-ingredient debounce, since steppers get tapped fast. Writes go through `upsert` on
   `ingredient_id` (replace, never sum). Setting a quantity to 0 deletes the row; that is how items
-  leave the basket.
+  leave the basket. `flush()` sends anything still on a timer and resolves when it lands — it runs on
+  `visibilitychange`/`pagehide` (a pocketed phone used to lose the last tap outright) and **must** be
+  awaited before `finishOrder`, which reads the basket server-side.
 
 Data access is plain async functions in `src/data/*.ts` that call `supabase` directly and throw
 `Error(message)`; the stores own all state and error handling. Keep new queries in that layer rather
@@ -99,11 +110,15 @@ skew them.
 ## Build phases
 
 `README.md` lists six phases and marks the current one — keep that marker moving as phases land.
-Phases 1–3 are committed (scaffold/auth/deploy, schema + Catalog screen, Order screen + basket +
-steppers). Phase 4 is current: basket screen with WhatsApp export, finish order, history. Then Dish
-and All views, then realtime sync, missing-item hints, location sweep, offline retry queue and PWA. The schema already provisions for the later phases —
-`basket_items` is in the `supabase_realtime` publication with `replica identity full`, and
+Phases 1–4 are committed: scaffold/auth/deploy, schema + Catalog screen, Order screen + basket +
+steppers, and basket screen + WhatsApp export + finish order + history. Phase 5 is current: Dish and
+All views. Then realtime sync, missing-item hints, location sweep, offline retry queue and PWA —
+`basket_items` is already in the `supabase_realtime` publication with `replica identity full`, and
 `order_lines_ingredient_idx` exists for the "ordered in 3 of the last 10" hint.
+
+Ordering flow, end to end: Order screen (walk the route, step quantities) → `/basket` (grouped by
+supplier, WhatsApp/copy export, Finish) → `/history`. `src/lib/orderText.ts` owns the grouping and
+the message format; WhatsApp's only formatting is `*bold*`.
 
 ## Comment style
 

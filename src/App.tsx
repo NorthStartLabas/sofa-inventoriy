@@ -4,6 +4,8 @@ import { useAuth } from './auth/authContext'
 import { SignIn } from './auth/SignIn'
 import { BasketProvider } from './basket/BasketProvider'
 import { CatalogProvider } from './data/CatalogProvider'
+import { BasketScreen } from './screens/BasketScreen'
+import { HistoryScreen } from './screens/HistoryScreen'
 import { OrderScreen } from './screens/OrderScreen'
 import { CatalogScreen } from './screens/catalog/CatalogScreen'
 
@@ -27,6 +29,8 @@ function Gate() {
       <BasketProvider>
         <Routes>
           <Route path="/" element={<OrderScreen />} />
+          <Route path="/basket" element={<BasketScreen />} />
+          <Route path="/history" element={<HistoryScreen />} />
           <Route path="/catalog" element={<CatalogScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

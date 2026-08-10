@@ -12,18 +12,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true
 
-    // The magic-link fragment has to be consumed before we ask for the session,
-    // otherwise the first read comes back empty and we flash the sign-in screen.
-    consumeAuthFromUrl()
-      .then(({ error }) => {
+    void (async () => {
+      try {
+        // The magic-link fragment has to be consumed before we ask for the
+        // session, otherwise the first read comes back empty and we flash the
+        // sign-in screen.
+        const { error } = await consumeAuthFromUrl()
         if (active && error) setCallbackError(error)
-        return supabase.auth.getSession()
-      })
-      .then(({ data }) => {
-        if (!active) return
-        setSession(data.session)
-        setLoading(false)
-      })
+
+        const { data } = await supabase.auth.getSession()
+        if (active) setSession(data.session)
+      } catch {
+        // Without this the whole app sits on "Loading…" forever: setLoading
+        // used to live inside the promise chain, so a dropped connection here
+        // meant it never ran. Kitchen wifi makes that a real state.
+        if (active) setCallbackError('Could not reach the server. Check the connection and reload.')
+      } finally {
+        if (active) setLoading(false)
+      }
+    })()
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
       if (!active) return
@@ -46,9 +53,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setCallbackError(null)
         const { error } = await supabase.auth.signInWithOtp({
           email: email.trim(),
-          options: { emailRedirectTo: redirectUrl() },
+          options: {
+            emailRedirectTo: redirectUrl(),
+            // Defaults to true, which would let anyone who reaches the sign-in
+            // form mint themselves an account — and every table is readable by
+            // any authenticated user. Signups are also off in Supabase Auth;
+            // this is the second lock on the same door.
+            shouldCreateUser: false,
+          },
         })
-        return { error: error ? error.message : null }
+        if (!error) return { error: null }
+        // "Signups not allowed for otp" is what an unknown address gets back.
+        // Say what it actually means to someone standing in a kitchen.
+        return {
+          error: /signups? not allowed/i.test(error.message)
+            ? 'That email is not set up for this kitchen.'
+            : error.message,
+        }
       },
       signOut: async () => {
         await supabase.auth.signOut()

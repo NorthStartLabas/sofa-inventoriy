@@ -10,7 +10,7 @@ import type { CatalogStore } from '../../data/useCatalog'
 import type { Dish } from '../../types'
 
 export function DishesTab({ store }: { store: CatalogStore }) {
-  const { catalog, setCatalog, mutate, run } = store
+  const { catalog, setCatalog, mutate, run, getCatalog } = store
   const [newName, setNewName] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [renaming, setRenaming] = useState<string | null>(null)
@@ -59,7 +59,12 @@ export function DishesTab({ store }: { store: CatalogStore }) {
   }
 
   function toggleIngredient(dishId: string, ingredientId: string) {
-    const current = ingredientIdsFor(dishId)
+    // Read through getCatalog, not this render's `catalog`: setIngredientsForDish
+    // replaces the dish's whole set, so a second tap landing before the re-render
+    // would compute from a stale snapshot and undo the first one.
+    const current = getCatalog()
+      .dishIngredients.filter((di) => di.dish_id === dishId)
+      .map((di) => di.ingredient_id)
     const next = current.includes(ingredientId)
       ? current.filter((id) => id !== ingredientId)
       : [...current, ingredientId]

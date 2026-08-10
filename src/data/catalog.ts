@@ -47,7 +47,12 @@ export async function deleteLocation(id: string): Promise<void> {
   const { error } = await supabase.from('locations').delete().eq('id', id)
   if (error) {
     if (error.code === FK_VIOLATION) {
-      throw new Error('Move or archive this location’s ingredients before deleting it.')
+      // Archiving deliberately does *not* help here — an archived ingredient
+      // keeps its location_id, and the foreign key is on delete restrict. The
+      // only way out is moving them somewhere else.
+      throw new Error(
+        'Move this location’s ingredients elsewhere first — archived ones still count.',
+      )
     }
     throw new Error(error.message)
   }

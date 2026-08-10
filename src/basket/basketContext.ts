@@ -11,6 +11,10 @@ export type BasketValue = {
   setQuantity: (ingredientId: string, quantity: number) => void
   remove: (ingredientId: string) => void
   reload: () => Promise<void>
+  /** Empty the local basket after the server has already cleared it. */
+  clear: () => void
+  /** Send any debounced writes now, and wait for them to land. */
+  flush: () => Promise<void>
 }
 
 export const BasketContext = createContext<BasketValue | null>(null)

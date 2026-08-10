@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchCatalog } from './catalog'
 import { emptyCatalog, type Catalog } from '../types'
 
@@ -16,6 +16,12 @@ export type CatalogStore = {
   mutate: (optimistic: (c: Catalog) => Catalog, persist: () => Promise<void>) => Promise<void>
   /** For inserts, where the id only exists once the server has replied. */
   run: (work: () => Promise<void>) => Promise<void>
+  /**
+   * The catalog as of *now*, not as of the last render. Needed when a handler
+   * has to derive its write from the current set — React runs state updaters
+   * during render, long after the handler has already sent the request.
+   */
+  getCatalog: () => Catalog
 }
 
 export function useCatalog(): CatalogStore {
@@ -23,9 +29,17 @@ export function useCatalog(): CatalogStore {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Re-synced every render, and eagerly inside mutate() so back-to-back
+  // handlers in the same tick don't each read the pre-change state.
+  const catalogRef = useRef(catalog)
+  catalogRef.current = catalog
+  const getCatalog = useCallback(() => catalogRef.current, [])
+
   const reload = useCallback(async () => {
     try {
-      setCatalog(await fetchCatalog())
+      const fresh = await fetchCatalog()
+      catalogRef.current = fresh
+      setCatalog(fresh)
       setError(null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load the catalog.')
@@ -40,7 +54,8 @@ export function useCatalog(): CatalogStore {
 
   const mutate = useCallback<CatalogStore['mutate']>(
     async (optimistic, persist) => {
-      setCatalog(optimistic)
+      catalogRef.current = optimistic(catalogRef.current)
+      setCatalog(catalogRef.current)
       setError(null)
       try {
         await persist()
@@ -61,5 +76,5 @@ export function useCatalog(): CatalogStore {
     }
   }, [])
 
-  return { catalog, setCatalog, loading, error, reload, mutate, run }
+  return { catalog, setCatalog, loading, error, reload, mutate, run, getCatalog }
 }

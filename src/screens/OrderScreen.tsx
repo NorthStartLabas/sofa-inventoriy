@@ -2,14 +2,11 @@ import { Link } from 'react-router-dom'
 import { useBasket } from '../basket/basketContext'
 import { NameChip } from '../components/NameChip'
 import { Stepper } from '../components/Stepper'
-import { formatQuantity } from '../data/basket'
 import { useCatalogStore } from '../data/catalogContext'
 
 export function OrderScreen() {
   const { catalog, loading, error } = useCatalogStore()
   const basket = useBasket()
-
-  const totalUnits = [...basket.items.values()].reduce((sum, item) => sum + item.quantity, 0)
 
   return (
     <div className="mx-auto max-w-2xl pb-24">
@@ -40,7 +37,13 @@ export function OrderScreen() {
       ) : (
         catalog.locations.map((location) => {
           const items = catalog.ingredients
-            .filter((i) => i.location_id === location.id && !i.archived)
+            // Archived stock stays hidden unless it's already in the basket —
+            // otherwise it counts towards the total on a row nobody can see or
+            // step back down to zero.
+            .filter(
+              (i) =>
+                i.location_id === location.id && (!i.archived || basket.items.has(i.id)),
+            )
             .sort((a, b) => a.sort_order - b.sort_order)
           if (items.length === 0) return null
 
@@ -75,6 +78,9 @@ export function OrderScreen() {
                           }`}
                         >
                           {ingredient.name}
+                          {ingredient.archived && (
+                            <span className="ml-2 font-normal text-amber-700">archived</span>
+                          )}
                         </p>
                         {/* The stepper already carries the quantity and unit,
                             so once a row is in the basket this slot says who
@@ -98,17 +104,24 @@ export function OrderScreen() {
         })
       )}
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-neutral-200 bg-white/95 backdrop-blur">
+      {/* The old bar summed quantities across units — 2 l plus 5 kg made
+          "7 units", which means nothing. The count is the honest number, and
+          the bar is now the way through to the basket. */}
+      <Link
+        to="/basket"
+        className="fixed inset-x-0 bottom-0 block border-t border-neutral-200 bg-white/95 backdrop-blur"
+      >
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <span className="flex-1 text-base font-semibold">
             {basket.count === 0
               ? 'Basket empty'
-              : `${basket.count} ${basket.count === 1 ? 'item' : 'items'} · ${formatQuantity(
-                  totalUnits,
-                )} units`}
+              : `${basket.count} ${basket.count === 1 ? 'item' : 'items'} in the basket`}
+          </span>
+          <span className="text-base text-neutral-500">
+            {basket.count === 0 ? 'Open →' : 'Review →'}
           </span>
         </div>
-      </div>
+      </Link>
     </div>
   )
 }
