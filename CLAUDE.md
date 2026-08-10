@@ -80,6 +80,15 @@ Data access is plain async functions in `src/data/*.ts` that call `supabase` dir
 `Error(message)`; the stores own all state and error handling. Keep new queries in that layer rather
 than calling `supabase` from components.
 
+**The three order views.** `src/screens/order/OrderScreen.tsx` is a shell — header, sticky view
+switcher, basket bar — and swaps only the list body between `RouteView`, `DishView` and `AllView`.
+All three render the same `IngredientRow`, so they differ purely in grouping, sorting and the row's
+subtitle (`added_by`/unit for Route and Dish, location for All). Two rules they share rather than
+each reinvent: `isVisibleInOrder` in `src/lib/orderView.ts` (archived stock is hidden unless it's
+already in the basket, or the count would name a row nobody can see), and route order — Dish sorts
+by location then `sort_order`, not alphabetically, so checking a dish is still one pass along the
+shelves. The switcher is `sticky top-0`, so anything sticky beneath it sits at `top-11` (44px).
+
 **Sort order.** `locations.sort_order` and `ingredients.sort_order` are the physical walking route
 and are never auto-sorted — always user-dragged via `ReorderList`. `ingredients.sort_order` is only
 ever compared within a location, so each location numbers from zero. `persistOrder` writes one
@@ -110,11 +119,12 @@ skew them.
 ## Build phases
 
 `README.md` lists six phases and marks the current one — keep that marker moving as phases land.
-Phases 1–4 are committed: scaffold/auth/deploy, schema + Catalog screen, Order screen + basket +
-steppers, and basket screen + WhatsApp export + finish order + history. Phase 5 is current: Dish and
-All views. Then realtime sync, missing-item hints, location sweep, offline retry queue and PWA —
-`basket_items` is already in the `supabase_realtime` publication with `replica identity full`, and
-`order_lines_ingredient_idx` exists for the "ordered in 3 of the last 10" hint.
+Phases 1–5 are committed: scaffold/auth/deploy, schema + Catalog screen, Order screen + basket +
+steppers, basket screen + WhatsApp export + finish order + history, and the Dish and All views.
+Phase 6 is current: realtime sync, missing-item hints, location sweep, offline retry queue and PWA.
+The schema already provisions for it — `basket_items` is in the `supabase_realtime` publication with
+`replica identity full`, and `order_lines_ingredient_idx` exists for the "ordered in 3 of the last
+10" hint.
 
 Ordering flow, end to end: Order screen (walk the route, step quantities) → `/basket` (grouped by
 supplier, WhatsApp/copy export, Finish) → `/history`. `src/lib/orderText.ts` owns the grouping and

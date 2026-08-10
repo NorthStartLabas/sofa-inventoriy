@@ -6,7 +6,7 @@ import { BasketProvider } from './basket/BasketProvider'
 import { CatalogProvider } from './data/CatalogProvider'
 import { BasketScreen } from './screens/BasketScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
-import { OrderScreen } from './screens/OrderScreen'
+import { OrderScreen } from './screens/order/OrderScreen'
 import { CatalogScreen } from './screens/catalog/CatalogScreen'
 
 function Gate() {
