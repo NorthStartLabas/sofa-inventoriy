@@ -60,8 +60,12 @@ export function useCatalog(): CatalogStore {
       try {
         await persist()
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'That change did not save.')
+        const message = e instanceof Error ? e.message : 'That change did not save.'
+        // Order matters: reload() clears the error when it succeeds, so stating
+        // it first meant the reason a change was refused flashed up and vanished
+        // a few hundred ms later — long enough to see, too short to read.
         await reload()
+        setError(message)
       }
     },
     [reload],

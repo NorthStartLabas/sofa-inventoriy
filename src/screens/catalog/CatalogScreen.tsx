@@ -47,8 +47,12 @@ export function CatalogScreen() {
         ))}
       </div>
 
+      {/* Sticky under the tab row: a refused delete happens far down a long list,
+          and an explanation pinned to the top of the page is one nobody reads.
+          z-50 puts it over the section headers, which are sticky at the same
+          offset — when both want the band, the error wins. */}
       {store.error && (
-        <p className="border-b border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
+        <p className="sticky top-11 z-50 border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
           {store.error}
         </p>
       )}
