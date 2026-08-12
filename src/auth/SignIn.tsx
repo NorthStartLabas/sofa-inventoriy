@@ -23,32 +23,32 @@ export function SignIn() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
       {/* The same rail the route runs on, used here as the cover of the list. */}
-      <div className="border-l-2 border-tape pl-4">
+      <div className="border-l-[3px] border-ink pl-4">
         <h1 className="label text-5xl leading-[0.95] tracking-[0.005em] text-ink">
           Kitchen
           <br />
           orders
         </h1>
-        <p className="mt-3 text-base text-steel">Two people, one list.</p>
+        <p className="mt-3 text-base text-stone">Two people, one list.</p>
       </div>
 
       {sent ? (
         <div className="mt-10 border-l-2 border-rule pl-4">
           <p className="text-base font-semibold text-ink">Link sent to {email}</p>
-          <p className="mt-1 text-base text-steel">
+          <p className="mt-1 text-base text-stone">
             Open it on this phone, in this browser, so the session lands in the right place.
           </p>
           <button
             type="button"
             onClick={() => setSent(false)}
-            className="mt-4 min-h-[44px] text-base font-medium text-tape underline underline-offset-4"
+            className="mt-4 min-h-[44px] text-base font-medium text-ink underline underline-offset-4"
           >
             Use a different email
           </button>
         </div>
       ) : (
         <form onSubmit={submit} className="mt-10">
-          <label htmlFor="email" className="label text-base text-steel">
+          <label htmlFor="email" className="label text-base text-stone">
             Email
           </label>
           <input
@@ -62,12 +62,12 @@ export function SignIn() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@restaurant.com"
-            className="mt-1 min-h-[52px] w-full rounded-md border border-rule bg-surface px-4 text-base text-ink outline-none placeholder:text-steel focus:border-tape"
+            className="mt-1 min-h-[52px] w-full rounded-md border border-rule bg-surface px-4 text-base text-ink outline-none placeholder:text-stone focus:border-ink"
           />
           <button
             type="submit"
             disabled={sending}
-            className={`${primaryButton} label mt-3 min-h-[52px] w-full`}
+            className={`${primaryButton} mt-3 min-h-[52px] w-full`}
           >
             {sending ? 'Sending…' : 'Send me a link'}
           </button>

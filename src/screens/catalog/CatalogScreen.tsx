@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/authContext'
+import { ScreenHeader } from '../../components/ScreenHeader'
+// `tab` is the selected-tab state in this file, so the style helper takes the alias.
+import { headerLink, tab as tabStyle } from '../../components/styles'
 import { useCatalogStore } from '../../data/catalogContext'
 import { DishesTab } from './DishesTab'
 import { IngredientsTab } from './IngredientsTab'
@@ -17,29 +20,27 @@ export function CatalogScreen() {
 
   return (
     <div className="mx-auto min-h-screen max-w-2xl bg-surface">
-      <header className="flex items-center gap-4 bg-tile px-4 py-3">
-        <Link to="/" className="min-h-[44px] py-2 text-base text-steel">
-          ← Order
-        </Link>
-        <h1 className="label flex-1 text-xl">Catalog</h1>
-        <button
-          type="button"
-          onClick={signOut}
-          className="min-h-[44px] text-base text-steel"
-        >
+      <ScreenHeader
+        title="Catalog"
+        leading={
+          <Link to="/" className={headerLink}>
+            ←
+          </Link>
+        }
+      >
+        <button type="button" onClick={signOut} className={headerLink}>
           Sign out
         </button>
-      </header>
+      </ScreenHeader>
 
-      <div className="sticky top-0 z-40 flex border-y border-rule bg-surface px-1">
+      <div className="sticky top-0 z-40 flex border-b border-rule bg-surface">
         {TABS.map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`mark min-h-[44px] flex-1 border-b-2 text-base font-medium ${
-              tab === t ? 'border-tape text-tape' : 'border-transparent text-steel'
-            }`}
+            aria-current={tab === t}
+            className={tabStyle(tab === t)}
           >
             {t}
           </button>
@@ -53,7 +54,7 @@ export function CatalogScreen() {
       )}
 
       {store.loading ? (
-        <p className="px-4 py-8 text-base text-steel">Loading…</p>
+        <p className="px-4 py-8 text-base text-stone">Loading…</p>
       ) : (
         <>
           {tab === 'Ingredients' && <IngredientsTab store={store} />}

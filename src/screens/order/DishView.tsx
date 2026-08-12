@@ -43,9 +43,9 @@ export function DishView() {
 
   if (catalog.dishes.length === 0) {
     return (
-      <p className="px-4 py-8 text-base text-steel">
+      <p className="px-4 py-8 text-base text-stone">
         No dishes yet.{' '}
-        <Link to="/catalog" className="text-tape underline underline-offset-4">
+        <Link to="/catalog" className="text-ink underline underline-offset-4">
           Add one in the catalog
         </Link>
         .
@@ -62,7 +62,7 @@ export function DishView() {
 
         return (
           <section key={dish.id}>
-            <h2 className="border-b border-rule bg-tile">
+            <h2 className="border-b border-rule bg-sand">
               <button
                 type="button"
                 onClick={() => toggle(dish.id)}
@@ -70,18 +70,18 @@ export function DishView() {
                 aria-expanded={isOpen}
               >
                 <span className="label text-base text-ink">{dish.name}</span>
-                <span className="flex-1 text-base text-steel tabular-nums">
+                <span className="flex-1 text-base text-stone tabular-nums">
                   {inBasket > 0 ? `${inBasket} of ${items.length}` : items.length}
                 </span>
-                <span className="text-base text-steel">{isOpen ? '▾' : '▸'}</span>
+                <span className="text-base text-stone">{isOpen ? '▾' : '▸'}</span>
               </button>
             </h2>
 
             {isOpen &&
               (items.length === 0 ? (
-                <p className="bg-surface px-4 py-4 text-base text-steel">
+                <p className="bg-surface px-4 py-4 text-base text-stone">
                   Nothing linked to this dish yet.{' '}
-                  <Link to="/catalog" className="text-tape underline underline-offset-4">
+                  <Link to="/catalog" className="text-ink underline underline-offset-4">
                     Pick its ingredients
                   </Link>
                   .

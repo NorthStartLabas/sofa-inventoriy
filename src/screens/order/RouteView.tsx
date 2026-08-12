@@ -27,11 +27,11 @@ export function RouteView() {
 
   if (sections.length === 0) {
     return (
-      <p className="px-4 py-8 text-base text-steel">
+      <p className="px-4 py-8 text-base text-stone">
         {catalog.locations.length === 0
           ? 'Nothing in the catalog yet. '
           : 'No ingredients on the route yet. '}
-        <Link to="/catalog" className="text-tape underline underline-offset-4">
+        <Link to="/catalog" className="text-ink underline underline-offset-4">
           Open the catalog
         </Link>
         .
@@ -45,12 +45,12 @@ export function RouteView() {
         const inBasket = items.filter((i) => basket.items.has(i.id)).length
 
         return (
-          <section key={location.id} className="border-l-[3px] border-tape/30">
+          <section key={location.id} className="border-l-[3px] border-ink/25">
             {/* top-11 clears the view switcher, which is sticky above it. */}
-            <h2 className="sticky top-11 z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-rule border-l-tape bg-tile px-4 py-2">
+            <h2 className="sticky top-11 z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-rule border-l-ink bg-sand px-4 py-2">
               <span className="label text-base text-ink">{location.name}</span>
               {inBasket > 0 && (
-                <span className="text-base text-steel tabular-nums">
+                <span className="text-base text-stone tabular-nums">
                   {inBasket} of {items.length}
                 </span>
               )}

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useBasket } from '../../basket/basketContext'
 import { NameChip } from '../../components/NameChip'
+import { ScreenHeader } from '../../components/ScreenHeader'
+import { headerLink, tab } from '../../components/styles'
 import { useCatalogStore } from '../../data/catalogContext'
 import { ORDER_VIEWS, useOrderView, type OrderView } from '../../lib/orderView'
 import { AllView } from './AllView'
@@ -25,24 +27,21 @@ export function OrderScreen() {
 
   return (
     <div className="mx-auto min-h-screen max-w-2xl bg-surface pb-24">
-      <header className="flex items-center gap-2 bg-tile px-3 py-2">
-        <h1 className="label flex-1 text-xl">Order</h1>
+      <ScreenHeader title="SOFA · Order">
         <NameChip />
-        <Link to="/catalog" className="min-h-[44px] px-2 text-base leading-[44px] text-steel">
+        <Link to="/catalog" className={headerLink}>
           Catalog
         </Link>
-      </header>
+      </ScreenHeader>
 
-      <div className="sticky top-0 z-40 flex border-y border-rule bg-surface">
+      <div className="sticky top-0 z-40 flex border-b border-rule bg-surface">
         {ORDER_VIEWS.map((option) => (
           <button
             key={option}
             type="button"
             onClick={() => setView(option)}
             aria-current={view === option}
-            className={`mark min-h-[44px] flex-1 border-b-2 text-base font-medium ${
-              view === option ? 'border-tape text-tape' : 'border-transparent text-steel'
-            }`}
+            className={tab(view === option)}
           >
             {LABELS[option]}
           </button>
@@ -56,7 +55,7 @@ export function OrderScreen() {
       )}
 
       {loading ? (
-        <p className="px-4 py-8 text-base text-steel">Loading…</p>
+        <p className="px-4 py-8 text-base text-stone">Loading…</p>
       ) : view === 'route' ? (
         <RouteView />
       ) : view === 'dish' ? (
@@ -67,22 +66,23 @@ export function OrderScreen() {
 
       <Link
         to="/basket"
-        className="fixed inset-x-0 bottom-0 block border-t border-rule bg-surface/95 backdrop-blur"
+        className="fixed inset-x-0 bottom-0 block bg-ink"
       >
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <span className="flex-1 text-base">
             {basket.count === 0 ? (
-              <span className="text-steel">Basket empty</span>
+              <span className="text-sand/75">Basket empty</span>
             ) : (
               <>
-                <span className="label text-base text-tape tabular-nums">
+                {/* Apricot's other job: the accent, on anthracite rather than under it. */}
+                <span className="label text-base text-apricot tabular-nums">
                   {basket.count} {basket.count === 1 ? 'item' : 'items'}
                 </span>
-                <span className="ml-2 text-steel">in the basket</span>
+                <span className="ml-2 text-sand/75">in the basket</span>
               </>
             )}
           </span>
-          <span className="label text-base text-ink">
+          <span className="label text-base text-sand">
             {basket.count === 0 ? 'Open →' : 'Review →'}
           </span>
         </div>

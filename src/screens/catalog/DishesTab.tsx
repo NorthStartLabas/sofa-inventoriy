@@ -83,7 +83,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
 
   return (
     <div className="px-4 py-4">
-      <p className="mb-4 text-base text-steel">
+      <p className="mb-4 text-base text-stone">
         A dish is a checklist of what needs to be in the house for it — not a recipe.
       </p>
 
@@ -115,7 +115,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
                     className="min-h-[44px] flex-1 text-left text-base font-medium"
                   >
                     {dish.name}
-                    <span className="ml-2 font-normal text-steel">{chosen.length}</span>
+                    <span className="ml-2 font-normal text-stone">{chosen.length}</span>
                   </button>
                   <button
                     type="button"
@@ -144,7 +144,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
 
                   return (
                     <div key={location.id} className="mt-2">
-                      <p className="label text-base text-steel">{location.name}</p>
+                      <p className="label text-base text-stone">{location.name}</p>
                       {items.map((ingredient) => (
                         <label
                           key={ingredient.id}
@@ -158,7 +158,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
                           />
                           {ingredient.name}
                           {ingredient.unit && (
-                            <span className="text-steel">{ingredient.unit}</span>
+                            <span className="text-stone">{ingredient.unit}</span>
                           )}
                         </label>
                       ))}
@@ -172,7 +172,7 @@ export function DishesTab({ store }: { store: CatalogStore }) {
       })}
 
       {catalog.dishes.length === 0 && (
-        <p className="py-6 text-base text-steel">No dishes yet.</p>
+        <p className="py-6 text-base text-stone">No dishes yet.</p>
       )}
 
       <div className="mt-6 flex gap-2">

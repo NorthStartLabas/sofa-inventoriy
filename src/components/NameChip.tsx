@@ -24,7 +24,8 @@ export function NameChip() {
           }
         }}
         placeholder="Your name"
-        className="h-11 w-28 rounded-md border border-tape px-2 text-base outline-none"
+        // Sits in the anthracite header, so it carries its own light ground.
+        className="h-11 w-28 rounded-md border border-rule bg-surface px-2 text-base text-ink outline-none"
       />
     )
   }
@@ -36,7 +37,7 @@ export function NameChip() {
         setDraft(name)
         setEditing(true)
       }}
-      className="h-11 rounded-md px-2 text-base text-steel"
+      className="h-11 rounded-md px-2 text-base text-sand/75"
     >
       {name || 'Set name'}
     </button>

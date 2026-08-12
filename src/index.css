@@ -1,29 +1,40 @@
 @import 'tailwindcss';
 /* Self-hosted: kitchen wifi is bad and a webfont request that hangs is a
-   screen of invisible text. One face, one weight, bundled with the app. */
-@import '@fontsource/ibm-plex-sans-condensed/600.css';
+   screen of invisible text. Latin only, two weights, bundled with the app.
+
+   Jost stands in for futura-pt, which is what sofamaastricht.nl sets — Futura
+   is Adobe Fonts only and can't be bundled, and a runtime fetch is exactly the
+   thing above. Jost is the geometric substitute that gets closest. */
+@import '@fontsource/jost/latin-600.css';
+@import '@fontsource/jost/latin-700.css';
 
 /* ---------------------------------------------------------------------------
-   A kitchen is cool-toned — steel, white tile, hard overhead light — so the
-   ground is a cool white rather than a warm paper cream.
+   The restaurant's own two colours, taken from sofamaastricht.nl: sand over
+   anthracite. The site bands one against the other everywhere — its stylesheet
+   literally names the class `sand-antraciet` — so the app does the same: sand
+   grounds everything you read, anthracite takes the two bands that aren't
+   content, the header and the basket bar.
 
-   Three colours do all the work, because three is what stays legible under
-   glare with wet hands and no time: ink to read, tape to mark, flag to warn.
-   Tape blue is the accent because blue painter's tape is how a kitchen labels
-   anything it has claimed, which is exactly what a row in the basket is.
+   Still three colours, because three is what stays legible under glare with wet
+   hands and no time: ink to read, apricot to mark, flag to warn. Apricot is the
+   site's own "claimed" colour — it fills the reserve button and the menu tabs —
+   which is exactly what a row in the basket is.
+
+   Apricot on white is 1.37, so it is never text and never a hairline on a light
+   ground. It has two jobs, both lifted from how the site uses it: a fill with
+   ink on top (9.67), or text on anthracite (9.67). Rails and rules stay ink.
    --------------------------------------------------------------------------- */
 @theme {
-  --color-tile: #f1f4f6;
+  --color-sand: #fff7ee;
   --color-surface: #ffffff;
-  --color-ink: #14181a;
-  --color-steel: #566269;
-  --color-rule: #d3dade;
-  --color-tape: #1257c7;
-  --color-tape-wash: #e2ecfb;
-  --color-flag: #a8480b;
-  --color-flag-wash: #fbede2;
+  --color-ink: #293133;
+  --color-stone: #5e5852;
+  --color-rule: #e7dccd;
+  --color-apricot: #fbd6a9;
+  --color-flag: #9e2b12;
+  --color-flag-wash: #f8e2dc;
 
-  --font-display: 'IBM Plex Sans Condensed', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Jost', ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
@@ -33,9 +44,9 @@ html {
 
 body {
   margin: 0;
-  /* Home-screen PWA: keep content clear of the notch and the home indicator. */
-  padding-top: env(safe-area-inset-top);
-  background: var(--color-tile);
+  /* The top inset belongs to ScreenHeader, which is anthracite — painting it
+     here would leave a sand strip above a dark band on a notched phone. */
+  background: var(--color-sand);
   color: var(--color-ink);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -47,18 +58,19 @@ button {
   user-select: none;
 }
 
-/* The station label: condensed caps, the way a rack or a shelf gets labelled. */
+/* The station label: caps and tracked, the way a rack or a shelf gets labelled.
+   The tracking is the site's own — .1em, the same as its buttons. */
 .label {
   font-family: var(--font-display);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.1em;
 }
 
 /* Keyboard focus has to be visible without being loud enough to read as an
-   error mid-service. */
+   error mid-service. Ink rather than the accent — apricot outlines vanish. */
 :focus-visible {
-  outline: 2px solid var(--color-tape);
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 

@@ -21,7 +21,7 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
 
   if (catalog.locations.length === 0) {
     return (
-      <p className="px-4 py-8 text-base text-steel">
+      <p className="px-4 py-8 text-base text-stone">
         Add a location first — every ingredient has to live somewhere on the route.
       </p>
     )
@@ -104,7 +104,7 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
 
   return (
     <div className="pb-8">
-      <label className="flex min-h-[44px] items-center gap-2 px-4 text-base text-steel">
+      <label className="flex min-h-[44px] items-center gap-2 px-4 text-base text-stone">
         <input
           type="checkbox"
           checked={showArchived}
@@ -118,9 +118,9 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
         const items = inLocation(location.id)
         return (
           <section key={location.id}>
-            <h2 className="label sticky top-11 z-30 border-y border-rule bg-tile px-4 py-2 text-base text-ink">
+            <h2 className="label sticky top-11 z-30 border-y border-rule bg-sand px-4 py-2 text-base text-ink">
               {location.name}
-              <span className="ml-2 font-normal text-steel">{items.length}</span>
+              <span className="ml-2 font-normal text-stone">{items.length}</span>
             </h2>
 
             <div className="px-1">
@@ -147,12 +147,12 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
                     >
                       <span
                         className={`flex-1 text-base font-medium ${
-                          ingredient.archived ? 'text-steel line-through' : ''
+                          ingredient.archived ? 'text-stone line-through' : ''
                         }`}
                       >
                         {ingredient.name}
                       </span>
-                      <span className="text-base text-steel">
+                      <span className="text-base text-stone">
                         {[
                           ingredient.unit || null,
                           supplierName(ingredient.supplier_id),

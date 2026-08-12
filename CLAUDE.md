@@ -109,33 +109,47 @@ gate anything.
 
 Tailwind v4 via `@tailwindcss/vite`; the only CSS file is `src/index.css`, which owns the design
 tokens in an `@theme` block. Shared control classes live in `src/components/styles.ts` — reuse
-`input`, `primaryButton`, `secondaryButton`, `quietButton`, `dangerButton` rather than re-deriving
-them.
+`input`, `primaryButton`, `secondaryButton`, `quietButton`, `dangerButton`, `headerLink` and the
+`tab(active)` helper rather than re-deriving them. Every screen's top band is `ScreenHeader`.
 
-**The palette is three colours, and that's deliberate** — three is what survives glare in a bright
-room. `ink` reads, `tape` marks, `flag` warns, over a cool `tile` ground (kitchens are steel and
-white tile, not warm paper). Use the tokens, never raw Tailwind palette names: `text-ink`,
-`text-steel`, `border-rule`, `bg-tile`, `bg-surface`, `text-tape`, `bg-tape-wash`, `text-flag`,
-`bg-flag-wash`.
+**The palette is the restaurant's, taken from `sofamaastricht.nl`** — anthracite `#293133` and sand
+`#fff7ee`, banded against each other the way the site bands them (its own stylesheet names the class
+`sand-antraciet`), with apricot `#fbd6a9` as the accent. Still three colours, because three is what
+survives glare in a bright room: `ink` reads, `apricot` marks, `flag` warns, over a `sand` ground.
+Use the tokens, never raw Tailwind palette names: `text-ink`, `text-stone`, `border-rule`, `bg-sand`,
+`bg-surface`, `bg-apricot`, `text-apricot`, `text-flag`, `bg-flag-wash`.
 
-A row in the basket fills `tape-wash`, not green. Blue painter's tape is how a kitchen labels
-anything it has claimed, which is what a basket row is; it also keeps the whole app to three
-colours. The state carries on four signals anyway (fill, weight, visible quantity, live minus
+**Apricot has exactly two jobs, and neither is text on a light ground** — it is 1.37 against white
+and vanishes. Both are lifted from how the site uses it:
+
+- a **fill** on a light surface with ink on top (9.67) — a basket row, the active tab, the primary
+  button (which is the site's `.reserveren-btn`: apricot ground, ink text, caps, `10px` radius);
+- **text on anthracite** (9.67) — the basket count in the bottom bar.
+
+Rails, rules and focus outlines stay `ink`; an apricot hairline is not visible at any width. A row in
+the basket fills apricot because apricot is the site's own "claimed" colour, which is what a basket
+row is — and the state carries on four signals anyway (fill, weight, visible quantity, live minus
 button), so colour isn't load-bearing. **Every token pair clears WCAG AA — check any new pair before
-using it**, worst current case is `flag` on `tape-wash` at 4.90.
+using it**; worst current case is `stone` on `apricot` at 5.11.
 
-**Type.** Body is system-ui: fast, no FOUT on kitchen wifi, best at 16px. The `.label` class (IBM
-Plex Sans Condensed, caps, tracked) marks **things in the kitchen** — a location, a supplier, a
-dish, a screen title. Not navigation: four condensed caps words don't fit 390px, which is why both
-tab rows are sentence case. The face is bundled via `@fontsource`, never fetched at runtime.
+**The two dark bands.** `ScreenHeader` is anthracite on every screen, and so is the fixed basket bar
+on the Order screen. The header owns `env(safe-area-inset-top)` rather than `body` — paint it on
+`body` and a notched phone gets a sand strip above a dark band. Anything placed in the header must be
+`text-sand`; `text-stone` on anthracite is 2.3 and fails.
+
+**Type.** Body is system-ui: fast, no FOUT on kitchen wifi, best at 16px. The `.label` class (Jost,
+caps, `.1em` tracked — the site's own button tracking) marks **things in the kitchen** — a location,
+a supplier, a dish, a screen title. Not navigation: four caps words don't fit 390px, which is why
+both tab rows are sentence case. Jost stands in for `futura-pt`, which is what the site sets and is
+Adobe Fonts–only; the face is bundled via `@fontsource` latin subsets, **never fetched at runtime**.
 
 **Never go below `text-base`.** It's the wet-hands floor and it stops iOS zooming on focus. Every
 tap target clears 44px.
 
-**The route rail** — the tape-coloured rule down the left of `RouteView`, faint between stops and
-solid at each location — belongs to that view alone. Route is the only one of the three whose order
-means something in the room, so it's the only one that gets a structural device saying so. Don't
-add it to Dish or All; there it would be decoration.
+**The route rail** — the rule down the left of `RouteView`, `ink/25` between stops and solid `ink` at
+each location — belongs to that view alone. Route is the only one of the three whose order means
+something in the room, so it's the only one that gets a structural device saying so. Don't add it to
+Dish or All; there it would be decoration.
 
 `ReorderList` uses pointer events, not HTML5 drag-and-drop, which doesn't fire on touch at all.
 Drag handles need `touch-none`; measurements are in document space so page scroll mid-drag doesn't

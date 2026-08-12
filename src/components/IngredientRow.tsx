@@ -21,7 +21,7 @@ export function IngredientRow({ ingredient, quantity, subtitle, onChange }: Prop
   return (
     <li
       className={`mark flex items-center gap-2 border-b border-rule py-1.5 pr-2 pl-4 ${
-        inBasket ? 'bg-tape-wash' : 'bg-surface'
+        inBasket ? 'bg-apricot' : 'bg-surface'
       }`}
     >
       <div className="min-w-0 flex-1">
@@ -32,7 +32,7 @@ export function IngredientRow({ ingredient, quantity, subtitle, onChange }: Prop
           )}
         </p>
         {/* Kept even when empty so rows stay the same height down the list. */}
-        <p className="truncate text-base text-steel">{subtitle}</p>
+        <p className="truncate text-base text-stone">{subtitle}</p>
       </div>
 
       <Stepper quantity={quantity} unit={ingredient.unit} onChange={onChange} />

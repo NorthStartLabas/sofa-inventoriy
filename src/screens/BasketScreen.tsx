@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useBasket } from '../basket/basketContext'
+import { ScreenHeader } from '../components/ScreenHeader'
 import { Stepper } from '../components/Stepper'
-import { primaryButton, secondaryButton } from '../components/styles'
+import { headerLink, primaryButton, secondaryButton } from '../components/styles'
 import { useCatalogStore } from '../data/catalogContext'
 import { finishOrder } from '../data/orders'
 import { useDisplayName } from '../lib/displayName'
@@ -53,15 +54,18 @@ export function BasketScreen() {
 
   return (
     <div className="mx-auto min-h-screen max-w-2xl bg-surface pb-40">
-      <header className="flex items-center gap-4 bg-tile px-3 py-2">
-        <Link to="/" className="h-11 px-1 text-base leading-[44px] text-steel">
-          ← Order
-        </Link>
-        <h1 className="label flex-1 text-xl">Basket</h1>
-        <Link to="/history" className="h-11 px-2 text-base leading-[44px] text-steel">
+      <ScreenHeader
+        title="Basket"
+        leading={
+          <Link to="/" className={headerLink}>
+            ←
+          </Link>
+        }
+      >
+        <Link to="/history" className={headerLink}>
           History
         </Link>
-      </header>
+      </ScreenHeader>
 
       {(failure ?? basket.error) && (
         <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
@@ -70,9 +74,9 @@ export function BasketScreen() {
       )}
 
       {loading || basket.loading ? (
-        <p className="px-4 py-8 text-base text-steel">Loading…</p>
+        <p className="px-4 py-8 text-base text-stone">Loading…</p>
       ) : lineCount === 0 ? (
-        <p className="px-4 py-8 text-base text-steel">
+        <p className="px-4 py-8 text-base text-stone">
           Nothing in the basket yet.{' '}
           <Link to="/" className="underline underline-offset-4">
             Walk the route
@@ -82,9 +86,9 @@ export function BasketScreen() {
       ) : (
         groups.map((group) => (
           <section key={group.supplierId ?? 'none'}>
-            <h2 className="sticky top-0 z-10 border-y border-rule bg-tile px-4 py-2">
+            <h2 className="sticky top-0 z-10 border-y border-rule bg-sand px-4 py-2">
               <span className="label text-base text-ink">{group.supplierName}</span>
-              <span className="ml-2 text-base text-steel tabular-nums">{group.lines.length}</span>
+              <span className="ml-2 text-base text-stone tabular-nums">{group.lines.length}</span>
             </h2>
 
             <ul>
@@ -102,7 +106,7 @@ export function BasketScreen() {
                         <span className="label ml-2 text-base font-normal text-flag">archived</span>
                       )}
                     </p>
-                    <p className="text-base text-steel">{line.addedBy ?? ''}</p>
+                    <p className="text-base text-stone">{line.addedBy ?? ''}</p>
                   </div>
 
                   <Stepper
@@ -125,7 +129,7 @@ export function BasketScreen() {
                 <p className="text-base font-semibold text-ink">
                   Send {lineCount} {lineCount === 1 ? 'item' : 'items'} and empty the basket?
                 </p>
-                <p className="mt-1 text-base text-steel">
+                <p className="mt-1 text-base text-stone">
                   It stays in History either way.
                 </p>
                 <div className="mt-3 flex gap-2">
@@ -133,7 +137,7 @@ export function BasketScreen() {
                     type="button"
                     onClick={finish}
                     disabled={sending}
-                    className={`${primaryButton} label flex-1`}
+                    className={`${primaryButton} flex-1`}
                   >
                     {sending ? 'Finishing…' : 'Yes, finish it'}
                   </button>
@@ -163,7 +167,7 @@ export function BasketScreen() {
                 <button
                   type="button"
                   onClick={() => setConfirming(true)}
-                  className={`${primaryButton} label flex-1`}
+                  className={`${primaryButton} flex-1`}
                 >
                   Finish
                 </button>

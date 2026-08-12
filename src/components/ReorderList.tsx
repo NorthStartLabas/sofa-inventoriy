@@ -119,7 +119,7 @@ export function ReorderList<T>({ items, getId, renderRow, onReorder, hideHandle 
     <div ref={containerRef} className={`relative ${drag ? 'select-none' : ''}`}>
       {drag && (
         <div
-          className="pointer-events-none absolute right-0 left-0 z-20 h-0.5 bg-tape"
+          className="pointer-events-none absolute right-0 left-0 z-20 h-0.5 bg-ink"
           style={{ top: indicatorY }}
         />
       )}
@@ -150,7 +150,7 @@ export function ReorderList<T>({ items, getId, renderRow, onReorder, hideHandle 
                   type="button"
                   aria-label="Drag to reorder"
                   // touch-action: none, or the browser scrolls instead of dragging.
-                  className="flex w-11 shrink-0 cursor-grab touch-none items-center justify-center text-steel active:cursor-grabbing"
+                  className="flex w-11 shrink-0 cursor-grab touch-none items-center justify-center text-stone active:cursor-grabbing"
                   onPointerDown={(e) => start(e, id, index)}
                   onPointerMove={move}
                   onPointerUp={end}

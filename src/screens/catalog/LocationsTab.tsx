@@ -70,7 +70,7 @@ export function LocationsTab({ store }: { store: CatalogStore }) {
 
   return (
     <div className="px-4 py-4">
-      <p className="mb-4 text-base text-steel">
+      <p className="mb-4 text-base text-stone">
         The order here is the walking route through the kitchen. Drag to match how you
         actually move.
       </p>
@@ -106,7 +106,7 @@ export function LocationsTab({ store }: { store: CatalogStore }) {
                   className="min-h-[44px] flex-1 text-left text-base font-medium"
                 >
                   {location.name}
-                  <span className="ml-2 font-normal text-steel">
+                  <span className="ml-2 font-normal text-stone">
                     {countsFor(location.id).active}
                     {countsFor(location.id).archived > 0 &&
                       ` +${countsFor(location.id).archived} archived`}
@@ -122,7 +122,7 @@ export function LocationsTab({ store }: { store: CatalogStore }) {
       />
 
       {locations.length === 0 && (
-        <p className="py-6 text-base text-steel">
+        <p className="py-6 text-base text-stone">
           No locations yet. Add the first section of your kitchen below.
         </p>
       )}

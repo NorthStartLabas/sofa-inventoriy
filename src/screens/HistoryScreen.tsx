@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ScreenHeader } from '../components/ScreenHeader'
+import { headerLink } from '../components/styles'
 import { formatQuantity } from '../data/basket'
 import { useCatalogStore } from '../data/catalogContext'
 import { fetchOrders, type Order } from '../data/orders'
@@ -39,15 +41,18 @@ export function HistoryScreen() {
 
   return (
     <div className="mx-auto min-h-screen max-w-2xl bg-surface pb-16">
-      <header className="flex items-center gap-4 bg-tile px-3 py-2">
-        <Link to="/basket" className="h-11 px-1 text-base leading-[44px] text-steel">
-          ← Basket
-        </Link>
-        <h1 className="label flex-1 text-xl">History</h1>
-        <Link to="/" className="h-11 px-2 text-base leading-[44px] text-steel">
+      <ScreenHeader
+        title="History"
+        leading={
+          <Link to="/basket" className={headerLink}>
+            ←
+          </Link>
+        }
+      >
+        <Link to="/" className={headerLink}>
           Order
         </Link>
-      </header>
+      </ScreenHeader>
 
       {error && (
         <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
@@ -56,9 +61,9 @@ export function HistoryScreen() {
       )}
 
       {orders === null ? (
-        <p className="px-4 py-8 text-base text-steel">Loading…</p>
+        <p className="px-4 py-8 text-base text-stone">Loading…</p>
       ) : orders.length === 0 ? (
-        <p className="px-4 py-8 text-base text-steel">
+        <p className="px-4 py-8 text-base text-stone">
           No orders sent yet. They show up here once you finish one.
         </p>
       ) : (
@@ -77,10 +82,10 @@ export function HistoryScreen() {
                   <span className="flex-1 text-base font-medium tabular-nums text-ink">
                     {sentAtLabel(order.sent_at)}
                     {order.sent_by && (
-                      <span className="ml-2 font-normal text-steel">{order.sent_by}</span>
+                      <span className="ml-2 font-normal text-stone">{order.sent_by}</span>
                     )}
                   </span>
-                  <span className="label text-base text-steel tabular-nums">
+                  <span className="label text-base text-stone tabular-nums">
                     {total} {total === 1 ? 'item' : 'items'}
                   </span>
                 </button>
@@ -100,7 +105,7 @@ export function HistoryScreen() {
                           <span className="tabular-nums">
                             {formatQuantity(line.quantity)}
                             {found?.unit && (
-                              <span className="ml-1 text-steel">{found.unit}</span>
+                              <span className="ml-1 text-stone">{found.unit}</span>
                             )}
                           </span>
                         </li>

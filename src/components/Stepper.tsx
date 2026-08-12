@@ -58,7 +58,7 @@ export function Stepper({ quantity, unit, onChange }: Props) {
             if (e.key === 'Escape') setTyping(false)
           }}
           autoFocus
-          className="h-11 w-16 rounded-md border-2 border-tape bg-surface text-center text-base tabular-nums outline-none"
+          className="h-11 w-16 rounded-md border-2 border-ink bg-surface text-center text-base tabular-nums outline-none"
         />
       ) : (
         <button
@@ -74,8 +74,8 @@ export function Stepper({ quantity, unit, onChange }: Props) {
               disabled minus just reads as two broken buttons. */}
           {quantity > 0 && (
             <>
-              <span className="text-tape">{formatQuantity(quantity)}</span>
-              {unit && <span className="ml-1 font-normal text-steel">{unit}</span>}
+              {formatQuantity(quantity)}
+              {unit && <span className="ml-1 font-normal text-stone">{unit}</span>}
             </>
           )}
         </button>

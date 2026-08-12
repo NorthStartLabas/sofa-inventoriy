@@ -14,7 +14,7 @@ function Gate() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-base text-steel">
+      <div className="flex min-h-screen items-center justify-center text-base text-stone">
         Loading…
       </div>
     )

@@ -50,8 +50,8 @@ export function IngredientEditor({
   }
 
   return (
-    <div className="border-b border-rule bg-tile px-3 py-4">
-      <label className="block text-base text-steel">
+    <div className="border-b border-rule bg-sand px-3 py-4">
+      <label className="block text-base text-stone">
         Name
         <input
           autoFocus
@@ -62,7 +62,7 @@ export function IngredientEditor({
         />
       </label>
 
-      <label className="mt-3 block text-base text-steel">
+      <label className="mt-3 block text-base text-stone">
         Unit
         <input
           value={unit}
@@ -72,7 +72,7 @@ export function IngredientEditor({
         />
       </label>
 
-      <label className="mt-3 block text-base text-steel">
+      <label className="mt-3 block text-base text-stone">
         Location
         <select
           value={locationId}
@@ -87,7 +87,7 @@ export function IngredientEditor({
         </select>
       </label>
 
-      <label className="mt-3 block text-base text-steel">
+      <label className="mt-3 block text-base text-stone">
         Supplier
         <select
           value={supplierId}
@@ -105,7 +105,7 @@ export function IngredientEditor({
 
       {catalog.dishes.length > 0 && (
         <div className="mt-4">
-          <p className="text-base text-steel">Dishes</p>
+          <p className="text-base text-stone">Dishes</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {catalog.dishes.map((dish) => {
               const on = dishIds.includes(dish.id)
@@ -116,7 +116,7 @@ export function IngredientEditor({
                   onClick={() => toggleDish(dish.id)}
                   className={`min-h-[44px] rounded-full border px-4 text-base ${
                     on
-                      ? 'border-tape bg-tape text-white'
+                      ? 'border-ink bg-apricot text-ink'
                       : 'border-rule text-ink'
                   }`}
                 >
