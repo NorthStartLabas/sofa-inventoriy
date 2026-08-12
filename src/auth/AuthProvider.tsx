@@ -55,11 +55,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: email.trim(),
           options: {
             emailRedirectTo: redirectUrl(),
-            // Defaults to true, which would let anyone who reaches the sign-in
-            // form mint themselves an account — and every table is readable by
-            // any authenticated user. Signups are also off in Supabase Auth;
-            // this is the second lock on the same door.
-            shouldCreateUser: false,
+            // Open on purpose: an unknown address gets an account rather than a
+            // refusal, so new people can register themselves.
+            //
+            // Read this before changing anything nearby: RLS is a single
+            // `for all to authenticated using (true)` policy per table, so an
+            // account is total access to the whole database. Registration being
+            // open means anyone who finds the URL can take it. Narrowing that
+            // means per-user policies or an allowlist, not a flag here.
+            shouldCreateUser: true,
           },
         })
         if (!error) return { error: null }

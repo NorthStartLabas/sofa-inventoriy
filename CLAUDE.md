@@ -34,19 +34,33 @@ is no Supabase CLI workflow here — later migrations should follow the same ide
 style as new numbered files.
 
 Permission model: every table has RLS on with a single `authenticated_all` policy — `for all to
-authenticated using (true)`. There are no roles and no per-user ownership. **This is only safe while
-signups are disabled in Supabase Auth**, since "authenticated" would otherwise mean "anyone". Don't
-add user-scoped logic expecting `auth.uid()` to be meaningful. Signups were open for a while and the
-whole database was reachable by anyone who found the URL; `shouldCreateUser: false` on
-`signInWithOtp` is the client-side half of that fix, and it must stay.
+authenticated using (true)`. There are no roles and no per-user ownership, so "authenticated" means
+"anyone with an account", and an account means the whole database. Don't add user-scoped logic
+expecting `auth.uid()` to be meaningful.
+
+**Registration is open by owner's decision** (2026-08-12): `shouldCreateUser: true` on
+`signInWithOtp`, and signups enabled in Supabase Auth. Combined with the policy above, anyone who
+finds the Pages URL can create an account and then read, edit and delete everything. This was open
+once before and the database was reachable by anyone who found it. The fix, if it's wanted later, is
+an `allowed_emails` table enforced by a trigger on `auth.users`, or per-user RLS — not the client
+flag, which only changes the error message an unknown address sees.
 
 `finish_order(p_sent_by)` (migration `0002`) is the only server-side function. It writes the order,
 copies the basket into `order_lines`, and empties `basket_items` in one call so a phone that drops
 signal can't clear the basket without recording it; an empty basket raises and rolls the order row
 back. It is `security invoker`, so RLS still applies and it grants nothing extra.
 
+Every `UPDATE` and `DELETE` needs a `WHERE` clause, including inside a function body. The
+`authenticator` role — the one PostgREST connects as — runs with `session_preload_libraries =
+supautils, safeupdate`, and `safeupdate` rejects unqualified writes with `DELETE requires a WHERE
+clause`. The SQL editor connects as a different role without it, so a bare `delete` will pass when
+you paste a migration and fail the moment the app calls it. Migration `0003` fixed exactly that in
+`finish_order`; `where true` is the accepted way to say "yes, all of them".
+
 Two deletion rules encode intent: `order_lines.ingredient_id` is `on delete restrict` and ingredients
 carry an `archived` flag — history must keep resolving, so archive ingredients instead of deleting.
+`deleteIngredient` exists too and surfaces the `23503` as "archive it instead"; `dish_ingredients`
+and `basket_items` cascade, so only a past order blocks a delete.
 `basket_items.ingredient_id` is `unique`, which is what lets two phones sync the basket row-by-row
 instead of overwriting each other with a whole-basket blob.
 

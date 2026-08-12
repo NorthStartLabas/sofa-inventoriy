@@ -3,6 +3,7 @@ import { ReorderList } from '../../components/ReorderList'
 import { secondaryButton } from '../../components/styles'
 import {
   createIngredient,
+  deleteIngredient,
   persistOrder,
   setDishesForIngredient,
   setIngredientArchived,
@@ -102,6 +103,20 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
     )
   }
 
+  // dish_ingredients and basket_items cascade server-side, so the optimistic
+  // state has to drop them here too or the counts stay stale until a reload.
+  function remove(ingredient: Ingredient) {
+    setEditingId(null)
+    void mutate(
+      (c) => ({
+        ...c,
+        ingredients: c.ingredients.filter((i) => i.id !== ingredient.id),
+        dishIngredients: c.dishIngredients.filter((di) => di.ingredient_id !== ingredient.id),
+      }),
+      () => deleteIngredient(ingredient.id),
+    )
+  }
+
   return (
     <div className="pb-8">
       <label className="flex min-h-[44px] items-center gap-2 px-4 text-base text-stone">
@@ -138,6 +153,7 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
                       onSave={(values, dishIds) => save(ingredient, values, dishIds)}
                       onCancel={() => setEditingId(null)}
                       onToggleArchived={() => toggleArchived(ingredient)}
+                      onDelete={() => remove(ingredient)}
                     />
                   ) : (
                     <button

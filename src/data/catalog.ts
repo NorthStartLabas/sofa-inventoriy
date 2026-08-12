@@ -107,6 +107,21 @@ export async function setIngredientArchived(id: string, archived: boolean): Prom
   if (error) throw new Error(error.message)
 }
 
+/**
+ * Dish links and basket rows go with it — both cascade. Past orders don't:
+ * order_lines is on delete restrict so history keeps resolving to real names,
+ * which is exactly what archiving is for.
+ */
+export async function deleteIngredient(id: string): Promise<void> {
+  const { error } = await supabase.from('ingredients').delete().eq('id', id)
+  if (error) {
+    if (error.code === FK_VIOLATION) {
+      throw new Error('This one is on a past order, so it can’t be deleted. Archive it instead.')
+    }
+    throw new Error(error.message)
+  }
+}
+
 // --- dishes -----------------------------------------------------------------
 
 export async function createDish(name: string): Promise<Dish> {

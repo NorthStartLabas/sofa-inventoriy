@@ -1,5 +1,11 @@
 import { useState } from 'react'
-import { input, primaryButton, quietButton, secondaryButton } from '../../components/styles'
+import {
+  dangerButton,
+  input,
+  primaryButton,
+  quietButton,
+  secondaryButton,
+} from '../../components/styles'
 import type { IngredientInput } from '../../data/catalog'
 import type { Catalog, Ingredient } from '../../types'
 
@@ -11,6 +17,7 @@ type Props = {
   onSave: (values: IngredientInput, dishIds: string[]) => void
   onCancel: () => void
   onToggleArchived?: () => void
+  onDelete?: () => void
 }
 
 export function IngredientEditor({
@@ -20,6 +27,7 @@ export function IngredientEditor({
   onSave,
   onCancel,
   onToggleArchived,
+  onDelete,
 }: Props) {
   const [name, setName] = useState(ingredient?.name ?? '')
   const [unit, setUnit] = useState(ingredient?.unit ?? '')
@@ -140,7 +148,19 @@ export function IngredientEditor({
             {ingredient?.archived ? 'Restore' : 'Archive'}
           </button>
         )}
+        {onDelete && (
+          <button type="button" onClick={onDelete} className={dangerButton}>
+            Delete
+          </button>
+        )}
       </div>
+
+      {onDelete && (
+        <p className="mt-2 text-base text-stone">
+          Archive keeps it out of the way but on past orders. Delete only works if it has
+          never been ordered.
+        </p>
+      )}
     </div>
   )
 }
