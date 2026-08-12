@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { headerLink } from '../components/styles'
 import { formatQuantity } from '../data/basket'
-import { useCatalogStore } from '../data/catalogContext'
 import { fetchOrders, type Order } from '../data/orders'
 
 /** "10 Aug, 14:32" — the day and time an order went out is all anyone asks. */
@@ -17,7 +16,6 @@ function sentAtLabel(iso: string): string {
 }
 
 export function HistoryScreen() {
-  const { catalog } = useCatalogStore()
   const [orders, setOrders] = useState<Order[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -34,10 +32,6 @@ export function HistoryScreen() {
   useEffect(() => {
     void load()
   }, [load])
-
-  // Archived ingredients still resolve here — fetchCatalog returns them, and
-  // order_lines is on delete restrict precisely so history keeps its names.
-  const ingredient = (id: string) => catalog.ingredients.find((i) => i.id === id)
 
   return (
     <div className="mx-auto min-h-screen max-w-2xl bg-surface pb-16">
@@ -92,25 +86,21 @@ export function HistoryScreen() {
 
                 {open && (
                   <ul className="pb-3">
-                    {order.order_lines.map((line) => {
-                      const found = ingredient(line.ingredient_id)
-                      return (
-                        <li
-                          key={line.id}
-                          className="flex items-baseline gap-2 px-4 py-1 text-base"
-                        >
-                          <span className="flex-1 text-ink">
-                            {found?.name ?? 'Removed ingredient'}
-                          </span>
-                          <span className="tabular-nums">
-                            {formatQuantity(line.quantity)}
-                            {found?.unit && (
-                              <span className="ml-1 text-stone">{found.unit}</span>
-                            )}
-                          </span>
-                        </li>
-                      )
-                    })}
+                    {/* Name and unit come off the line itself, so a past order
+                        keeps saying what it said — even after the ingredient is
+                        renamed, or deleted outright. */}
+                    {order.order_lines.map((line) => (
+                      <li
+                        key={line.id}
+                        className="flex items-baseline gap-2 px-4 py-1 text-base"
+                      >
+                        <span className="flex-1 text-ink">{line.ingredient_name}</span>
+                        <span className="tabular-nums">
+                          {formatQuantity(line.quantity)}
+                          {line.unit && <span className="ml-1 text-stone">{line.unit}</span>}
+                        </span>
+                      </li>
+                    ))}
                   </ul>
                 )}
               </li>

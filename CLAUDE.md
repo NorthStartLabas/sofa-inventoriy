@@ -57,10 +57,18 @@ clause`. The SQL editor connects as a different role without it, so a bare `dele
 you paste a migration and fail the moment the app calls it. Migration `0003` fixed exactly that in
 `finish_order`; `where true` is the accepted way to say "yes, all of them".
 
-Two deletion rules encode intent: `order_lines.ingredient_id` is `on delete restrict` and ingredients
-carry an `archived` flag — history must keep resolving, so archive ingredients instead of deleting.
-`deleteIngredient` exists too and surfaces the `23503` as "archive it instead"; `dish_ingredients`
-and `basket_items` cascade, so only a past order blocks a delete.
+**An order line remembers itself** (migration `0004`). `order_lines` carries its own
+`ingredient_name` and `unit`, written by `finish_order` at send time, and `ingredient_id` is
+`on delete set null`. So an ingredient can be deleted for good and History still reads correctly —
+menus change, and the old rule (`on delete restrict` + archive-only) made anything ever ordered
+permanently undeletable, which in turn made its location permanently undeletable. It also fixes a
+quieter bug: History used to resolve names against the *live* catalog, so renaming an ingredient
+silently rewrote every past order that mentioned it. Never reintroduce a catalog lookup there.
+
+Nothing blocks `deleteIngredient` now — `dish_ingredients` and `basket_items` cascade, order lines
+null out. Archiving still exists, but as "hide it, keep it orderable later", not as a substitute for
+deleting. `locations` stays `on delete restrict` from `ingredients`: emptying a location first is
+deliberate, not an obstacle, and now actually achievable.
 `basket_items.ingredient_id` is `unique`, which is what lets two phones sync the basket row-by-row
 instead of overwriting each other with a whole-basket blob.
 

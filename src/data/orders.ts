@@ -3,7 +3,11 @@ import { supabase } from '../lib/supabase'
 export type OrderLine = {
   id: string
   order_id: string
-  ingredient_id: string
+  /** Null once the ingredient is deleted — the line outlives it on purpose. */
+  ingredient_id: string | null
+  /** What the line said when it was sent, not what the catalog says now. */
+  ingredient_name: string
+  unit: string | null
   quantity: number
 }
 

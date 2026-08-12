@@ -157,8 +157,8 @@ export function IngredientEditor({
 
       {onDelete && (
         <p className="mt-2 text-base text-stone">
-          Archive keeps it out of the way but on past orders. Delete only works if it has
-          never been ordered.
+          Archive hides it but keeps it orderable later. Delete removes it for good — past
+          orders keep the name they were sent with.
         </p>
       )}
     </div>

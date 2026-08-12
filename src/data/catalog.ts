@@ -48,10 +48,9 @@ export async function deleteLocation(id: string): Promise<void> {
   if (error) {
     if (error.code === FK_VIOLATION) {
       // Archiving deliberately does *not* help here — an archived ingredient
-      // keeps its location_id, and the foreign key is on delete restrict. The
-      // only way out is moving them somewhere else.
+      // keeps its location_id, and the foreign key is on delete restrict.
       throw new Error(
-        'Move this location’s ingredients elsewhere first — archived ones still count.',
+        'Delete or move this location’s ingredients first — archived ones still count.',
       )
     }
     throw new Error(error.message)
@@ -108,18 +107,13 @@ export async function setIngredientArchived(id: string, archived: boolean): Prom
 }
 
 /**
- * Dish links and basket rows go with it — both cascade. Past orders don't:
- * order_lines is on delete restrict so history keeps resolving to real names,
- * which is exactly what archiving is for.
+ * Nothing blocks this. Dish links and basket rows cascade; order lines keep
+ * their own copy of the name and unit (migration 0004) and just drop the id,
+ * so history still reads correctly with the ingredient gone.
  */
 export async function deleteIngredient(id: string): Promise<void> {
   const { error } = await supabase.from('ingredients').delete().eq('id', id)
-  if (error) {
-    if (error.code === FK_VIOLATION) {
-      throw new Error('This one is on a past order, so it can’t be deleted. Archive it instead.')
-    }
-    throw new Error(error.message)
-  }
+  if (error) throw new Error(error.message)
 }
 
 // --- dishes -----------------------------------------------------------------
