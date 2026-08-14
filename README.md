@@ -24,8 +24,12 @@ Row Level Security and must never appear in this repo or the bundle.
 
 Run each file in `supabase/migrations/` once, in order, in the Supabase SQL editor.
 
-**Signups must stay disabled** (Authentication → Sign In / Providers). Every table is
-readable and writable by any signed-in user, so an open signup form is an open database.
+**Signups are open, by the owner's decision (2026-08-12).** Every table is readable and
+writable by any signed-in user — there are no roles and no per-user ownership — so an
+account is the whole database, and anyone who finds the Pages URL can create one. If that
+should change, the fix is an `allowed_emails` table enforced by a trigger on `auth.users`,
+or per-user RLS. Not the client's `shouldCreateUser` flag, which only changes the error
+message an unknown address sees.
 
 ## Deployment
 
@@ -52,11 +56,16 @@ One-time setup:
 3. ~~Order screen (Location view), basket, steppers~~
 4. ~~Basket screen, WhatsApp export, finish order, history~~
 5. ~~Dish and All views~~
+6. Realtime sync, offline retry queue, PWA — **current**
 
-The app is feature-complete. A sixth phase — realtime sync, missing-item hints,
-location sweep, offline retry queue, PWA — was planned and **deliberately dropped**.
-Don't reinstate it without asking.
+Phase 6 was dropped once and then reinstated: real use made the case for it. Two of the
+first four orders went out from different phones an hour apart, so "two people rarely
+order at the same moment" stopped being true.
 
-The one thing it would have fixed: two phones don't sync live. If both people add
-the same ingredient within a minute, the later write replaces the earlier quantity
-rather than merging. Fine for two people who rarely order at the same moment.
+What landed: the basket syncs live between phones, writes that can't reach the server are
+queued on the device and replayed when signal returns, and the app installs to the home
+screen. Concurrent edits to the *same* row still resolve last-write-wins — nothing merges
+— but both phones now agree on the result instead of disagreeing silently.
+
+Still unbuilt from that list: missing-item hints ("ordered in 3 of the last 10") and the
+location sweep.

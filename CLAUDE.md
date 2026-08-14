@@ -94,9 +94,26 @@ hook. Follow the pattern when adding providers.
 - `BasketProvider` (`src/basket/BasketProvider.tsx`) — a `Map<ingredient_id, BasketItem>` with a
   400ms per-ingredient debounce, since steppers get tapped fast. Writes go through `upsert` on
   `ingredient_id` (replace, never sum). Setting a quantity to 0 deletes the row; that is how items
-  leave the basket. `flush()` sends anything still on a timer and resolves when it lands — it runs on
-  `visibilitychange`/`pagehide` (a pocketed phone used to lose the last tap outright) and **must** be
-  awaited before `finishOrder`, which reads the basket server-side.
+  leave the basket. `flush()` sends anything still on a timer, drains the retry queue, and resolves
+  when it lands — it runs on `visibilitychange`/`pagehide` (a pocketed phone used to lose the last
+  tap outright) and **must** be awaited before `finishOrder`, which reads the basket server-side.
+  It **rejects** if the queue won't drain; `BasketScreen` must let that stop the send rather than
+  swallow it, or an order silently goes out short.
+
+  Pending writes are plain `BasketWrite` data, not closures, because the retry queue has to survive
+  a reload. `src/basket/retryQueue.ts` holds failed writes in localStorage keyed by `ingredient_id`
+  — one entry per ingredient, last wins, mirroring the upsert: the basket is a quantity, not a
+  history of taps. Only *retriable* failures are queued. `src/data/basket.ts` throws
+  `BasketWriteError` and decides that at the point of failure — a PostgREST rejection carries a
+  `code` and is the server saying no; a fetch that never arrived has none. **Don't sniff error
+  strings in the provider**, and don't replay refusals.
+
+  Realtime sync subscribes to `postgres_changes` on `basket_items`. It ignores events for
+  ingredients with a change still in flight (`pending` or `unsaved`), or our own echo would
+  overwrite a newer tap. It does **not** merge concurrent edits — same-row conflicts still resolve
+  last-write-wins, exactly as the upsert always did; what it fixes is two phones showing different
+  numbers. `reload()` on `SUBSCRIBED` and on becoming visible covers events lost while the socket
+  was down.
 
 Data access is plain async functions in `src/data/*.ts` that call `supabase` directly and throw
 `Error(message)`; the stores own all state and error handling. Keep new queries in that layer rather
@@ -105,11 +122,22 @@ than calling `supabase` from components.
 **The three order views.** `src/screens/order/OrderScreen.tsx` is a shell — header, sticky view
 switcher, basket bar — and swaps only the list body between `RouteView`, `DishView` and `AllView`.
 All three render the same `IngredientRow`, so they differ purely in grouping, sorting and the row's
-subtitle (`added_by`/unit for Route and Dish, location for All). Two rules they share rather than
+subtitle (`added_by`/unit for Route and Dish, location for All). Three rules they share rather than
 each reinvent: `isVisibleInOrder` in `src/lib/orderView.ts` (archived stock is hidden unless it's
-already in the basket, or the count would name a row nobody can see), and route order — Dish sorts
-by location then `sort_order`, not alphabetically, so checking a dish is still one pass along the
-shelves. The switcher is `sticky top-0`, so anything sticky beneath it sits at `top-11` (44px).
+already in the basket, or the count would name a row nobody can see), `matchesQuery`/`normalize` in
+the same file (diacritic-folding substring match — the catalog is Dutch), and route order — Dish
+sorts by location then `sort_order`, not alphabetically, so checking a dish is still one pass along
+the shelves.
+
+**Search belongs to the shell, not the views.** `OrderScreen` owns the term and passes it down, so
+it survives switching views — find something in All, flip to Route, and it's still filtered, which
+is how you learn which shelf it's on. Search and archiving stay *composed*, never merged:
+`isVisibleInOrder(i, basket.items) && matchesQuery(i, term)`. An archived row already in the basket
+keeps showing; typing a name still means you want that name.
+
+The switcher and the search band are **one** `sticky top-0` block, 44px + 60px, so anything sticky
+beneath sits at `top-26` (104px) — that's `RouteView`'s location headers. Two stacked sticky
+elements at different offsets is the fiddlier version of the same thing; don't split them again.
 
 **Sort order.** `locations.sort_order` and `ingredients.sort_order` are the physical walking route
 and are never auto-sorted — always user-dragged via `ReorderList`. `ingredients.sort_order` is only
@@ -182,10 +210,10 @@ skew them.
 `README.md` lists six phases and marks the current one — keep that marker moving as phases land.
 Phases 1–5 are committed: scaffold/auth/deploy, schema + Catalog screen, Order screen + basket +
 steppers, basket screen + WhatsApp export + finish order + history, and the Dish and All views.
-Phase 6 is current: realtime sync, missing-item hints, location sweep, offline retry queue and PWA.
-The schema already provisions for it — `basket_items` is in the `supabase_realtime` publication with
-`replica identity full`, and `order_lines_ingredient_idx` exists for the "ordered in 3 of the last
-10" hint.
+
+Phase 6 is now largely landed: realtime sync, offline retry queue and PWA are in. Still unbuilt from
+that list are **missing-item hints** ("ordered in 3 of the last 10" — `order_lines_ingredient_idx`
+exists for it) and **location sweep**.
 
 Ordering flow, end to end: Order screen (walk the route, step quantities) → `/basket` (grouped by
 supplier, WhatsApp/copy export, Finish) → `/history`. `src/lib/orderText.ts` owns the grouping and
