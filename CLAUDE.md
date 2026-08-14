@@ -26,6 +26,29 @@ belongs there — the service_role key bypasses RLS and must never reach the bun
 Deploy is push-to-`main` via `.github/workflows/deploy.yml` (GitHub Pages, secrets supply the two
 `VITE_` vars). `vite.config.ts` pins `base: '/sofa-inventoriy/'` to the repo name.
 
+## How to work on this without breaking service
+
+The kitchen uses this during service. Two rules, both established 2026-08-14 and expected from
+here on:
+
+**Never develop on a branch that can deploy.** Work on a feature branch and leave `main` alone
+until the owner has tested and says to merge. The workflow triggers on push to `main` only, so a
+branch is a hard guarantee rather than a promise.
+
+**Never point local development at the live database.** There is a second, free Supabase project,
+**`sofa-inventoriy-dev`** (ref `upkidadrscyigcycvofx`), holding a copy of the real catalog — same
+169 ingredients, 3 locations, 26 dishes, 4 orders. Local `.env` points there; the live credentials
+live in `.env.live.backup` (both gitignored, and production reads its own from repo secrets, so
+neither file can affect the deployed site). Swap back only when the branch has been merged.
+
+Search is read-only and harmless, but the basket, realtime sync and bulk supplier assignment all
+write — and staff see those writes immediately. Migrations get applied to the dev project first,
+then to live at merge time.
+
+Re-seeding the dev project: apply `supabase/migrations/*` in order, then copy the catalog across
+by name rather than by id (`string_agg` the rows out of live, `string_to_array` them back in).
+Ids don't need to match, and a dump of full INSERT statements is too large to move in one piece.
+
 ## Database
 
 The schema lives in `supabase/migrations/0001_initial_schema.sql` and is applied by pasting it into
