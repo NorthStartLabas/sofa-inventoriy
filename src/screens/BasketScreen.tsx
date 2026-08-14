@@ -39,7 +39,9 @@ export function BasketScreen() {
     setFailure(null)
     try {
       // Any tap still inside the 400ms debounce has to land first — finish_order
-      // reads the basket on the server, not from this screen.
+      // reads the basket on the server, not from this screen. flush also drains
+      // the offline queue and rejects if it can't, which is the point: an order
+      // that quietly goes out missing four items is worse than one that waits.
       await basket.flush()
       await finishOrder(name || null)
       basket.clear()
@@ -194,9 +196,10 @@ export function BasketScreen() {
                 <button
                   type="button"
                   onClick={() => setConfirming(true)}
+                  disabled={basket.unsaved.size > 0}
                   className={`${primaryButton} flex-1`}
                 >
-                  Finish
+                  {basket.unsaved.size > 0 ? 'Not saved yet' : 'Finish'}
                 </button>
               </div>
             )}

@@ -80,6 +80,7 @@ export function RouteView({ query }: { query: string }) {
                     // The stepper already carries the quantity and unit, so once
                     // a row is in the basket this slot says who put it there.
                     subtitle={quantity > 0 ? (line?.added_by ?? '') : ingredient.unit}
+                    unsaved={basket.unsaved.has(ingredient.id)}
                     onChange={(next) => basket.setQuantity(ingredient.id, next)}
                   />
                 )

@@ -8,12 +8,22 @@ export type BasketValue = {
   error: string | null
   /** Distinct ingredients in the basket. */
   count: number
+  /**
+   * Ingredients whose latest change hasn't reached the server yet. Shown as a
+   * quiet marker on the row rather than reverting what was tapped.
+   */
+  unsaved: Set<string>
   setQuantity: (ingredientId: string, quantity: number) => void
   remove: (ingredientId: string) => void
   reload: () => Promise<void>
   /** Empty the local basket after the server has already cleared it. */
   clear: () => void
-  /** Send any debounced writes now, and wait for them to land. */
+  /**
+   * Send any debounced writes now, and wait for them to land. Also drains the
+   * offline retry queue: finish_order reads basket_items server-side, so
+   * anything still queued would be silently missing from the order. Rejects if
+   * it can't get everything through — the caller must not send a short order.
+   */
   flush: () => Promise<void>
 }
 

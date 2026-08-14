@@ -6,6 +6,8 @@ type Props = {
   quantity: number
   /** Second line — each view fills it with whatever is most useful there. */
   subtitle: string
+  /** Tapped, but the change hasn't reached the server yet. */
+  unsaved?: boolean
   onChange: (quantity: number) => void
 }
 
@@ -15,7 +17,7 @@ type Props = {
  *
  * Renders an <li>, so the caller supplies the <ul>.
  */
-export function IngredientRow({ ingredient, quantity, subtitle, onChange }: Props) {
+export function IngredientRow({ ingredient, quantity, subtitle, unsaved, onChange }: Props) {
   const inBasket = quantity > 0
 
   return (
@@ -31,8 +33,12 @@ export function IngredientRow({ ingredient, quantity, subtitle, onChange }: Prop
             <span className="label ml-2 text-base text-flag">archived</span>
           )}
         </p>
-        {/* Kept even when empty so rows stay the same height down the list. */}
-        <p className="truncate text-base text-stone">{subtitle}</p>
+        {/* Kept even when empty so rows stay the same height down the list.
+            The unsaved note takes the slot over rather than adding a line,
+            because it's the more urgent of the two things it could say. */}
+        <p className="truncate text-base text-stone">
+          {unsaved ? 'not saved yet' : subtitle}
+        </p>
       </div>
 
       <Stepper quantity={quantity} unit={ingredient.unit} onChange={onChange} />

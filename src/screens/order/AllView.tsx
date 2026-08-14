@@ -49,6 +49,7 @@ export function AllView({ query }: { query: string }) {
                 ingredient={ingredient}
                 quantity={quantity}
                 subtitle={where}
+                unsaved={basket.unsaved.has(ingredient.id)}
                 onChange={(next) => basket.setQuantity(ingredient.id, next)}
               />
             )

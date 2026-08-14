@@ -113,6 +113,7 @@ export function DishView({ query }: { query: string }) {
                         ingredient={ingredient}
                         quantity={quantity}
                         subtitle={quantity > 0 ? (line?.added_by ?? '') : ingredient.unit}
+                        unsaved={basket.unsaved.has(ingredient.id)}
                         onChange={(next) => basket.setQuantity(ingredient.id, next)}
                       />
                     )
