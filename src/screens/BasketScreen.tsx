@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useBasket } from '../basket/basketContext'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { Stepper } from '../components/Stepper'
-import { headerLink, primaryButton, secondaryButton } from '../components/styles'
+import { headerLink, primaryButton, quietButton, secondaryButton } from '../components/styles'
 import { useCatalogStore } from '../data/catalogContext'
 import { finishOrder } from '../data/orders'
 import { useDisplayName } from '../lib/displayName'
@@ -18,17 +18,17 @@ export function BasketScreen() {
   const [confirming, setConfirming] = useState(false)
   const [sending, setSending] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState<string | null>(null)
 
   const groups = useMemo(() => groupBasket(basket.items, catalog), [basket.items, catalog])
   const text = useMemo(() => orderText(groups), [groups])
   const lineCount = groups.reduce((sum, group) => sum + group.lines.length, 0)
 
-  async function copy() {
+  async function copy(what: string, mark: string) {
     try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(what)
+      setCopied(mark)
+      window.setTimeout(() => setCopied(null), 2000)
     } catch {
       setFailure('Could not copy. Long-press the list to select it instead.')
     }
@@ -85,10 +85,33 @@ export function BasketScreen() {
         </p>
       ) : (
         groups.map((group) => (
-          <section key={group.supplierId ?? 'none'}>
-            <h2 className="sticky top-0 z-10 border-y border-rule bg-sand px-4 py-2">
-              <span className="label text-base text-ink">{group.supplierName}</span>
-              <span className="ml-2 text-base text-stone tabular-nums">{group.lines.length}</span>
+          <section key={group.key}>
+            <h2 className="sticky top-0 z-10 flex items-center gap-2 border-y border-rule bg-sand px-4 py-2">
+              <span className="label text-base text-ink">{group.heading}</span>
+              <span className="flex-1 text-base text-stone tabular-nums">
+                {group.lines.length}
+              </span>
+              {/* One message per recipient: the whole-order buttons below are
+                  right for one supplier and wrong for three. */}
+              {groups.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => copy(orderText([group]), group.key)}
+                    className={quietButton}
+                  >
+                    {copied === group.key ? 'Copied' : 'Copy'}
+                  </button>
+                  <a
+                    href={whatsappUrl(orderText([group]))}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`${quietButton} leading-[44px]`}
+                  >
+                    Send
+                  </a>
+                </>
+              )}
             </h2>
 
             <ul>
@@ -153,8 +176,12 @@ export function BasketScreen() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <button type="button" onClick={copy} className={secondaryButton}>
-                  {copied ? 'Copied' : 'Copy'}
+                <button
+                  type="button"
+                  onClick={() => copy(text, 'all')}
+                  className={secondaryButton}
+                >
+                  {copied === 'all' ? 'Copied' : 'Copy'}
                 </button>
                 <a
                   href={whatsappUrl(text)}

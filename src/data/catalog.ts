@@ -75,6 +75,41 @@ export async function deleteSupplier(id: string): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
+/**
+ * Replaces the whole set of ingredients a supplier covers.
+ *
+ * Unlike dishes, this isn't a join table — supplier_id is a column on
+ * ingredients, and one ingredient has one supplier. So it's two updates rather
+ * than a delete and an insert: clear the ones dropped, set the ones chosen.
+ * Both carry a WHERE, because the authenticator role runs safeupdate and
+ * rejects anything less at runtime (the SQL editor would let it past).
+ *
+ * Assigning suppliers one ingredient at a time meant 169 trips through the
+ * editor, which is why none of them were ever filled in.
+ */
+export async function setIngredientsForSupplier(
+  supplierId: string,
+  ingredientIds: string[],
+): Promise<void> {
+  const cleared = supabase
+    .from('ingredients')
+    .update({ supplier_id: null })
+    .eq('supplier_id', supplierId)
+  // .not(...) with an empty list builds `id=not.in.()`, which Postgrest rejects.
+  const clear =
+    ingredientIds.length === 0
+      ? await cleared
+      : await cleared.not('id', 'in', `(${ingredientIds.join(',')})`)
+  if (clear.error) throw new Error(clear.error.message)
+
+  if (ingredientIds.length === 0) return
+  const { error } = await supabase
+    .from('ingredients')
+    .update({ supplier_id: supplierId })
+    .in('id', ingredientIds)
+  if (error) throw new Error(error.message)
+}
+
 // --- ingredients ------------------------------------------------------------
 
 export type IngredientInput = {
