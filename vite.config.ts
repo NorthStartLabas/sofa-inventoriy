@@ -24,7 +24,9 @@ export default defineConfig({
         start_url: base,
         scope: base,
         display: 'standalone',
-        orientation: 'portrait',
+        // No `orientation` lock. It was 'portrait', which is right for a phone
+        // and wrong for the tablet the two-pane layout exists for — an installed
+        // iPad could never have turned sideways to reach it.
         // Matches ScreenHeader, so the status bar continues the anthracite band
         // instead of interrupting it.
         theme_color: '#293133',

@@ -58,8 +58,11 @@ export function RouteView({ query }: { query: string }) {
 
         return (
           <section key={location.id} className="border-l-[3px] border-ink/25">
-            {/* top-26 clears the switcher and the search band above it (104px). */}
-            <h2 className="sticky top-26 z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-rule border-l-ink bg-sand px-4 py-2">
+            {/* Clears the switcher and the search band above it: 44 + 60 for the
+                controls, plus the 1px bottom border each band carries. Measured,
+                not assumed — as 104 it pinned 2px under the block and lost its
+                own top hairline. */}
+            <h2 className="sticky top-[106px] z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-rule border-l-ink bg-sand px-4 py-2">
               <span className="label text-base text-ink">{location.name}</span>
               {inBasket > 0 && (
                 <span className="text-base text-stone tabular-nums">

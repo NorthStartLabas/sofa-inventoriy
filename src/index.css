@@ -58,6 +58,18 @@ button {
   user-select: none;
 }
 
+/* The app was built for thumbs and had no mouse affordance at all: not one
+   cursor, not one hover state. One rule covers every control in it. */
+button:not(:disabled),
+label:has(input[type='checkbox']),
+summary {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 /* The station label: caps and tracked, the way a rack or a shelf gets labelled.
    The tracking is the site's own — .1em, the same as its buttons. */
 .label {

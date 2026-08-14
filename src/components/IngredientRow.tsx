@@ -22,8 +22,11 @@ export function IngredientRow({ ingredient, quantity, subtitle, unsaved, onChang
 
   return (
     <li
+      // The hover tint isn't an affordance — the row isn't a target, the stepper
+      // is. It's a ruler: on a wide screen the name and the stepper are far
+      // apart, and this is what keeps your eye on the same line between them.
       className={`mark flex items-center gap-2 border-b border-rule py-1.5 pr-2 pl-4 ${
-        inBasket ? 'bg-apricot' : 'bg-surface'
+        inBasket ? 'bg-apricot hover:brightness-95' : 'bg-surface hover:bg-sand'
       }`}
     >
       <div className="min-w-0 flex-1">

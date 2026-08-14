@@ -133,7 +133,9 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
         const items = inLocation(location.id)
         return (
           <section key={location.id}>
-            <h2 className="label sticky top-11 z-30 border-y border-rule bg-sand px-4 py-2 text-base text-ink">
+            {/* 45px, not 44: the tab row above is a 44px control plus a 1px
+                bottom border, and at 44 this pinned a pixel underneath it. */}
+            <h2 className="label sticky top-[45px] z-30 border-y border-rule bg-sand px-4 py-2 text-base text-ink">
               {location.name}
               <span className="ml-2 font-normal text-stone">{items.length}</span>
             </h2>

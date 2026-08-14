@@ -12,33 +12,34 @@ export type OrderLineView = {
 
 export type OrderGroup = {
   /**
-   * Supplier id, or location id when grouping fell back to locations. Distinct
-   * per group either way, which supplierId no longer is — several location
-   * groups share a null supplier.
+   * `sup:<id>` or `loc:<id>`. Prefixed because both halves of a mixed order
+   * land in one namespace, and this doubles as a React key and as the marker
+   * the Basket screen uses to remember which group it just copied.
    */
   key: string
-  /**
-   * The supplier this group goes to, or null — either the unassigned pile, or,
-   * when nothing in the basket has a supplier at all, a location group.
-   */
-  supplierId: string | null
+  /** Grouped by location because nothing in it has a supplier yet. */
+  needsSupplier: boolean
   heading: string
   lines: OrderLineView[]
 }
-
-const NO_SUPPLIER = 'No supplier'
 
 /**
  * Grouped by supplier, because one message goes to each. Inside a group the
  * kitchen's own walking route is preserved, so the list can still be checked
  * against the shelves in one pass.
  *
- * With no suppliers assigned anywhere — which is how the catalog actually
- * stands — grouping by supplier collapses to a single pile headed "No
- * supplier", and every message sent so far has led with that. So when nothing
- * has a supplier, group by location instead: the message keeps its structure,
- * and the structure is the walking route, which is what whoever receives it
- * can check against the shelves. One supplier assigned anywhere flips it back.
+ * Whatever has no supplier is grouped by location rather than piled under one
+ * "No supplier" heading — a heading that reads as a fault in the app to
+ * whoever receives the message, and that says nothing about where to find the
+ * stock. Locations are the walking route, so an unassigned group can still be
+ * checked against the shelves; suppliers get filled in over time and the
+ * message improves as they do, instead of being wrong until the day the last
+ * one is done.
+ *
+ * Nothing about the app's own state reaches the text — the heading is the
+ * location's name, full stop. "Still needs a supplier" is a note for the
+ * kitchen, and the kitchen reads it on the Basket screen, not in a message
+ * sent to Hanos.
  */
 export function groupBasket(items: Map<string, BasketItem>, catalog: Catalog): OrderGroup[] {
   const byId = new Map(catalog.ingredients.map((i) => [i.id, i]))
@@ -60,26 +61,35 @@ export function groupBasket(items: Map<string, BasketItem>, catalog: Catalog): O
     return a.ingredient.sort_order - b.ingredient.sort_order
   })
 
-  const bySupplier = rows.some(({ ingredient }) => ingredient.supplier_id !== null)
   const locationNames = new Map(catalog.locations.map((l) => [l.id, l.name]))
 
-  const groups = new Map<string, OrderGroup>()
+  // Two maps rather than one, because the two halves are ordered differently
+  // and a single map would have to be un-sorted again to separate them.
+  const supplierGroups = new Map<string, OrderGroup>()
+  const locationGroups = new Map<string, OrderGroup>()
+
   for (const { ingredient, item } of rows) {
-    const key = bySupplier ? (ingredient.supplier_id ?? '') : ingredient.location_id
-    let group = groups.get(key)
+    const assigned = ingredient.supplier_id !== null
+    const into = assigned ? supplierGroups : locationGroups
+    const key = assigned ? `sup:${ingredient.supplier_id}` : `loc:${ingredient.location_id}`
+
+    let group = into.get(key)
     if (!group) {
       group = {
-        key: key || 'none',
-        supplierId: bySupplier ? ingredient.supplier_id : null,
-        heading: bySupplier
-          ? ingredient.supplier_id
-            ? (supplierNames.get(ingredient.supplier_id) ?? NO_SUPPLIER)
-            : NO_SUPPLIER
+        key,
+        needsSupplier: !assigned,
+        heading: assigned
+          ? // A supplier_id that resolves to nothing means the row was deleted
+            // out from under the basket; say where the stock is instead.
+            (supplierNames.get(ingredient.supplier_id!) ??
+            locationNames.get(ingredient.location_id) ??
+            'Elsewhere')
           : (locationNames.get(ingredient.location_id) ?? 'Elsewhere'),
         lines: [],
       }
-      groups.set(key, group)
+      into.set(key, group)
     }
+
     group.lines.push({
       ingredientId: ingredient.id,
       name: ingredient.name,
@@ -90,18 +100,15 @@ export function groupBasket(items: Map<string, BasketItem>, catalog: Catalog): O
     })
   }
 
-  // Grouped by location, the Map is already in route order — rows were sorted
-  // that way above, and insertion order is what a Map keeps. Sorting it
-  // alphabetically here would throw away the one thing the grouping is for.
-  if (!bySupplier) return [...groups.values()]
-
-  // Named suppliers alphabetically, the unassigned pile last — it's the one
-  // that needs a decision before anything can be sent.
-  return [...groups.values()].sort((a, b) => {
-    if (!a.supplierId) return 1
-    if (!b.supplierId) return -1
-    return a.heading.localeCompare(b.heading)
-  })
+  return [
+    // Suppliers alphabetically: they're names, and a name is looked up.
+    ...[...supplierGroups.values()].sort((a, b) => a.heading.localeCompare(b.heading)),
+    // Locations keep the Map's insertion order, which is the route order the
+    // rows were sorted into above. Sorting these alphabetically would throw
+    // away the one thing grouping by location is for. Last, because these are
+    // the ones still waiting on a decision.
+    ...locationGroups.values(),
+  ]
 }
 
 export function formatLine(line: OrderLineView): string {

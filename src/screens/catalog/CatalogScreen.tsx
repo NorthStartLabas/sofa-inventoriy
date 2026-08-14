@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/authContext'
 import { ScreenHeader } from '../../components/ScreenHeader'
 // `tab` is the selected-tab state in this file, so the style helper takes the alias.
-import { headerLink, tab as tabStyle } from '../../components/styles'
+import { columnWidth, headerLink, tab as tabStyle } from '../../components/styles'
 import { useCatalogStore } from '../../data/catalogContext'
 import { DishesTab } from './DishesTab'
 import { IngredientsTab } from './IngredientsTab'
@@ -19,7 +19,7 @@ export function CatalogScreen() {
   const [tab, setTab] = useState<Tab>('Ingredients')
 
   return (
-    <div className="mx-auto min-h-screen max-w-2xl bg-surface">
+    <div className="bg-sand">
       <ScreenHeader
         title="Catalog"
         leading={
@@ -33,40 +33,47 @@ export function CatalogScreen() {
         </button>
       </ScreenHeader>
 
-      <div className="sticky top-0 z-40 flex border-b border-rule bg-surface">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            aria-current={tab === t}
-            className={tabStyle(tab === t)}
-          >
-            {t}
-          </button>
-        ))}
+      {/* One column at every width, on purpose. ReorderList measures every row
+          edge once at drag start, in document space, and autoscrolls `window` —
+          so a grid, or a pane with its own scrollbar, breaks dragging in a way
+          that only shows up when someone tries to reorder the route. Wider is
+          safe here; re-flowed is not. */}
+      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface md:border-x md:border-rule`}>
+        <div className="sticky top-0 z-40 flex border-b border-rule bg-surface">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              aria-current={tab === t}
+              className={tabStyle(tab === t)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Sticky under the tab row: a refused delete happens far down a long list,
+            and an explanation pinned to the top of the page is one nobody reads.
+            z-50 puts it over the section headers, which are sticky at the same
+            offset — when both want the band, the error wins. */}
+        {store.error && (
+          <p className="sticky top-[45px] z-50 border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
+            {store.error}
+          </p>
+        )}
+
+        {store.loading ? (
+          <p className="px-4 py-8 text-base text-stone">Loading…</p>
+        ) : (
+          <>
+            {tab === 'Ingredients' && <IngredientsTab store={store} />}
+            {tab === 'Dishes' && <DishesTab store={store} />}
+            {tab === 'Locations' && <LocationsTab store={store} />}
+            {tab === 'Suppliers' && <SuppliersTab store={store} />}
+          </>
+        )}
       </div>
-
-      {/* Sticky under the tab row: a refused delete happens far down a long list,
-          and an explanation pinned to the top of the page is one nobody reads.
-          z-50 puts it over the section headers, which are sticky at the same
-          offset — when both want the band, the error wins. */}
-      {store.error && (
-        <p className="sticky top-11 z-50 border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
-          {store.error}
-        </p>
-      )}
-
-      {store.loading ? (
-        <p className="px-4 py-8 text-base text-stone">Loading…</p>
-      ) : (
-        <>
-          {tab === 'Ingredients' && <IngredientsTab store={store} />}
-          {tab === 'Dishes' && <DishesTab store={store} />}
-          {tab === 'Locations' && <LocationsTab store={store} />}
-          {tab === 'Suppliers' && <SuppliersTab store={store} />}
-        </>
-      )}
     </div>
   )
 }

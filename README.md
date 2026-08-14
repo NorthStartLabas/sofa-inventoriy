@@ -69,3 +69,23 @@ screen. Concurrent edits to the *same* row still resolve last-write-wins — not
 
 Still unbuilt from that list: missing-item hints ("ordered in 3 of the last 10") and the
 location sweep.
+
+### Since then
+
+Three things came out of the first week of real use:
+
+**The message no longer says "No supplier".** Anything with a supplier is grouped under it;
+everything else is grouped by *location*, in walking-route order. The old behaviour only
+avoided that heading when the catalog had no suppliers at all, so the moment the first one
+was filled in, every message carried a `*No supplier*` block. Locations are something the
+person receiving the list can actually check against the shelves.
+
+**You're asked for your name once, before the app opens.** `added_by` is the only thing the
+name is for, and nothing ever asked for one, so lines went out attributed to nobody. It's
+still per-device, still grants nothing, and is still changed from the header afterwards.
+
+**It works on a tablet and a computer.** Below 768px nothing changed — the phone layout is
+the one in service. Above it the column widens and sits as a sheet on the sand ground; from
+1024px the Order screen splits in two, with the basket live beside the list instead of
+behind a tap, and the bottom bar drops away. The PWA is no longer locked to portrait, which
+it had to stop being for an installed iPad to reach any of this.

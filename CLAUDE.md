@@ -158,9 +158,16 @@ is how you learn which shelf it's on. Search and archiving stay *composed*, neve
 `isVisibleInOrder(i, basket.items) && matchesQuery(i, term)`. An archived row already in the basket
 keeps showing; typing a name still means you want that name.
 
-The switcher and the search band are **one** `sticky top-0` block, 44px + 60px, so anything sticky
-beneath sits at `top-26` (104px) — that's `RouteView`'s location headers. Two stacked sticky
-elements at different offsets is the fiddlier version of the same thing; don't split them again.
+The switcher and the search band are **one** `sticky top-0` block, so anything sticky beneath sits
+at `top-[106px]` — that's `RouteView`'s location headers. Two stacked sticky elements at different
+offsets is the fiddlier version of the same thing; don't split them again.
+
+**106, not 104 — count the borders.** The controls are 44px + 60px, but each band also carries a
+1px `border-b`. This was written down as 104 and was wrong for months: a pinned location header sat
+2px under the block and lost its own top hairline. The Catalog's headers are `top-[45px]` for the
+same reason (44px tab row + 1px). If you change a band's height, **measure** the block rather than
+re-deriving it — `getBoundingClientRect().bottom` on the sticky block, against the `.top` of a
+header that has come to rest.
 
 **Sort order.** `locations.sort_order` and `ingredients.sort_order` are the physical walking route
 and are never auto-sorted — always user-dragged via `ReorderList`. `ingredients.sort_order` is only
@@ -175,8 +182,22 @@ is **off** and `src/lib/authCallback.ts` consumes the fragment and rewrites the 
 the router mounts. If you touch auth or routing, keep that ordering intact.
 
 Sign-in is magic-link only (`signInWithOtp`). `useDisplayName` (`src/lib/displayName.ts`) is a
-per-device localStorage name used purely for the `added_by` label — it is not identity and must never
-gate anything.
+per-device localStorage name used purely for the `added_by` label. **It is not identity and grants
+nothing** — RLS decides what anyone can read or write and has never heard of it. Don't hang
+permission on it.
+
+It does gate the *interface*, though, and deliberately: `Gate` renders `NamePrompt` when there's a
+session but no name, above the providers and outside the router, so it can't be routed past or
+rendered behind. `added_by` is the only thing the name is for, nobody was ever asked for one, and a
+line attributed to nobody is a line you have to go and ask about. (An earlier version of this file
+said the name "must never gate anything"; that was about permission, and it still holds for
+permission.)
+
+`useDisplayName` is a **module-level store read through `useSyncExternalStore`**, not `useState` per
+call site. It has to be: with a copy per component, the only thing that ever reconciled them was the
+`storage` event, which fires in *other* tabs only — so changing the name in `NameChip` left the copy
+`BasketScreen` hands to `finish_order` stale, and the gate could never see a name being set beneath
+it.
 
 ## UI conventions
 
@@ -228,6 +249,45 @@ Dish or All; there it would be decoration.
 Drag handles need `touch-none`; measurements are in document space so page scroll mid-drag doesn't
 skew them.
 
+## Widths
+
+The app is phone-first and the phone layout is the one in service — **below `md` (768px) nothing
+about it changes**, and the 44px tap floor and the `text-base` floor don't relax with width either.
+One person on a laptop is not a reason to make the phone in the kitchen worse.
+
+Three breakpoints, Tailwind defaults: `md` widens the column, `lg` (1024) splits the Order screen,
+`xl` gives the basket pane more room.
+
+**One column width, shared by three things.** `columnWidth` and `wideWidth` in
+`src/components/styles.ts` are used by the screen body, by `ScreenHeader`'s inner container and by
+any fixed bar, so all three agree on where the content edge is. `ScreenHeader` runs its anthracite
+band edge to edge and centres its *contents* — it used to inherit the screen's 672px, which no phone
+can tell apart, but on anything wider left a short dark bar floating above a bottom bar that did
+span the viewport. Pass `width={wideWidth}` on the Order screen; everything else takes the default.
+
+**The Order screen is two panes at `lg`** — the route column, unchanged, and `BasketPane` beside it,
+with the fixed bottom bar `lg:hidden`. The pane is `self-start sticky top-0 max-h-screen`; `self-start`
+is load-bearing, because a flex child stretches to the row's height by default and something
+full-height can never stick. There is still exactly **one page scroll**: the route column scrolls the
+document as it always has, which is what `RouteView`'s sticky headers and `ReorderList`'s
+document-space measuring both assume.
+
+`BasketScreen` and `BasketPane` are two renderings of `useOrderSend` (`src/basket/useOrderSend.ts`),
+never two implementations. `finish()` lives there because its ordering is load-bearing — `flush()`
+first, and `flush()` *rejects* rather than letting a short order go out — and a second copy is how
+one copy loses the guard.
+
+**The Catalog stays one column at every width, on purpose.** `ReorderList` measures every row edge
+once at drag start and autoscrolls `window`; a grid, or a pane with its own scrollbar, breaks
+dragging in a way that only surfaces when someone tries to reorder the route. Widening is safe;
+re-flowing is not. `HistoryScreen`'s expanded lines are the one exception (`lg:columns-2`) — static
+text with nothing draggable in it.
+
+**Hover states exist but are never the only signal.** Tailwind v4 wraps every `hover:` in
+`@media (hover: hover)`, so no touch device inherits one and gets stuck showing it after a tap. The
+tint on `IngredientRow` isn't an affordance — the row isn't a target, the stepper is — it's a ruler,
+for when the name and the stepper are 700px apart.
+
 ## Build phases
 
 `README.md` lists six phases and marks the current one — keep that marker moving as phases land.
@@ -241,6 +301,15 @@ exists for it) and **location sweep**.
 Ordering flow, end to end: Order screen (walk the route, step quantities) → `/basket` (grouped by
 supplier, WhatsApp/copy export, Finish) → `/history`. `src/lib/orderText.ts` owns the grouping and
 the message format; WhatsApp's only formatting is `*bold*`.
+
+**Grouping is two passes, and there is no "No supplier" pile.** `groupBasket` puts anything with a
+supplier in a supplier group (alphabetical, first) and everything else in a group per *location*
+(route order, last). A single heading reading `*No supplier*` is what the message used to lead with,
+and it reads as a fault in the app to whoever receives it while saying nothing about where the stock
+is. Locations are the walking route, so an unassigned group can still be checked against the shelves,
+and the message improves as suppliers get filled in rather than being wrong until the last one is
+done. `needsSupplier` is on the group for the Basket screen's benefit only — **nothing about the
+app's own state goes in the text**, which is sent to an outside supplier.
 
 ## Comment style
 

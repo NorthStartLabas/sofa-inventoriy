@@ -1,61 +1,41 @@
-import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useBasket } from '../basket/basketContext'
+import { Link } from 'react-router-dom'
+import { useOrderSend } from '../basket/useOrderSend'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { Stepper } from '../components/Stepper'
-import { headerLink, primaryButton, quietButton, secondaryButton } from '../components/styles'
-import { useCatalogStore } from '../data/catalogContext'
-import { finishOrder } from '../data/orders'
-import { useDisplayName } from '../lib/displayName'
-import { groupBasket, orderText, whatsappUrl } from '../lib/orderText'
+import {
+  columnWidth,
+  headerLink,
+  primaryButton,
+  quietButton,
+  secondaryButton,
+} from '../components/styles'
+import { orderText, whatsappUrl } from '../lib/orderText'
 
+/**
+ * The basket in full: every group, per-supplier export, and Finish. On a wide
+ * screen `BasketPane` shows the same basket beside the Order screen — both
+ * render `useOrderSend`, which owns the send itself, so there is only ever one
+ * implementation of the part that must not go wrong.
+ */
 export function BasketScreen() {
-  const { catalog, loading } = useCatalogStore()
-  const basket = useBasket()
-  const { name } = useDisplayName()
-  const navigate = useNavigate()
-
-  const [confirming, setConfirming] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [failure, setFailure] = useState<string | null>(null)
-  const [copied, setCopied] = useState<string | null>(null)
-
-  const groups = useMemo(() => groupBasket(basket.items, catalog), [basket.items, catalog])
-  const text = useMemo(() => orderText(groups), [groups])
-  const lineCount = groups.reduce((sum, group) => sum + group.lines.length, 0)
-
-  async function copy(what: string, mark: string) {
-    try {
-      await navigator.clipboard.writeText(what)
-      setCopied(mark)
-      window.setTimeout(() => setCopied(null), 2000)
-    } catch {
-      setFailure('Could not copy. Long-press the list to select it instead.')
-    }
-  }
-
-  async function finish() {
-    setSending(true)
-    setFailure(null)
-    try {
-      // Any tap still inside the 400ms debounce has to land first — finish_order
-      // reads the basket on the server, not from this screen. flush also drains
-      // the offline queue and rejects if it can't, which is the point: an order
-      // that quietly goes out missing four items is worse than one that waits.
-      await basket.flush()
-      await finishOrder(name || null)
-      basket.clear()
-      navigate('/history')
-    } catch (e) {
-      setFailure(e instanceof Error ? e.message : 'Could not finish that order.')
-      setConfirming(false)
-    } finally {
-      setSending(false)
-    }
-  }
+  const {
+    groups,
+    text,
+    lineCount,
+    loading,
+    error,
+    unsavedCount,
+    setQuantity,
+    confirming,
+    setConfirming,
+    sending,
+    copied,
+    copy,
+    finish,
+  } = useOrderSend()
 
   return (
-    <div className="mx-auto min-h-screen max-w-2xl bg-surface pb-40">
+    <div className="bg-sand">
       <ScreenHeader
         title="Basket"
         leading={
@@ -69,86 +49,94 @@ export function BasketScreen() {
         </Link>
       </ScreenHeader>
 
-      {(failure ?? basket.error) && (
-        <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
-          {failure ?? basket.error}
-        </p>
-      )}
+      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface pb-40 md:border-x md:border-rule`}>
+        {error && (
+          <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
+            {error}
+          </p>
+        )}
 
-      {loading || basket.loading ? (
-        <p className="px-4 py-8 text-base text-stone">Loading…</p>
-      ) : lineCount === 0 ? (
-        <p className="px-4 py-8 text-base text-stone">
-          Nothing in the basket yet.{' '}
-          <Link to="/" className="underline underline-offset-4">
-            Walk the route
-          </Link>
-          .
-        </p>
-      ) : (
-        groups.map((group) => (
-          <section key={group.key}>
-            <h2 className="sticky top-0 z-10 flex items-center gap-2 border-y border-rule bg-sand px-4 py-2">
-              <span className="label text-base text-ink">{group.heading}</span>
-              <span className="flex-1 text-base text-stone tabular-nums">
-                {group.lines.length}
-              </span>
-              {/* One message per recipient: the whole-order buttons below are
-                  right for one supplier and wrong for three. */}
-              {groups.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => copy(orderText([group]), group.key)}
-                    className={quietButton}
+        {loading ? (
+          <p className="px-4 py-8 text-base text-stone">Loading…</p>
+        ) : lineCount === 0 ? (
+          <p className="px-4 py-8 text-base text-stone">
+            Nothing in the basket yet.{' '}
+            <Link to="/" className="underline underline-offset-4">
+              Walk the route
+            </Link>
+            .
+          </p>
+        ) : (
+          groups.map((group) => (
+            <section key={group.key}>
+              <h2 className="sticky top-0 z-10 flex items-center gap-2 border-y border-rule bg-sand px-4 py-2">
+                <span className="label text-base text-ink">{group.heading}</span>
+                <span className="flex-1 truncate text-base text-stone tabular-nums">
+                  {group.lines.length}
+                  {/* The heading says the location, because that's what belongs
+                      in a message to an outside supplier. This is the half that
+                      only the kitchen needs, so it stays on the screen. */}
+                  {group.needsSupplier && <span className="ml-2">· no supplier yet</span>}
+                </span>
+                {/* One message per recipient: the whole-order buttons below are
+                    right for one supplier and wrong for three. */}
+                {groups.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => copy(orderText([group]), group.key)}
+                      className={quietButton}
+                    >
+                      {copied === group.key ? 'Copied' : 'Copy'}
+                    </button>
+                    <a
+                      href={whatsappUrl(orderText([group]))}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`${quietButton} leading-[44px]`}
+                    >
+                      Send
+                    </a>
+                  </>
+                )}
+              </h2>
+
+              <ul>
+                {group.lines.map((line) => (
+                  <li
+                    key={line.ingredientId}
+                    className="flex items-center gap-2 border-b border-rule bg-surface py-1.5 pr-2 pl-4"
                   >
-                    {copied === group.key ? 'Copied' : 'Copy'}
-                  </button>
-                  <a
-                    href={whatsappUrl(orderText([group]))}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`${quietButton} leading-[44px]`}
-                  >
-                    Send
-                  </a>
-                </>
-              )}
-            </h2>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-base font-semibold text-ink">
+                        {line.name}
+                        {/* Archived stock shouldn't normally be ordered, but it
+                            can sit in the basket from before it was archived. */}
+                        {line.archived && (
+                          <span className="label ml-2 text-base font-normal text-flag">archived</span>
+                        )}
+                      </p>
+                      <p className="text-base text-stone">{line.addedBy ?? ''}</p>
+                    </div>
 
-            <ul>
-              {group.lines.map((line) => (
-                <li
-                  key={line.ingredientId}
-                  className="flex items-center gap-2 border-b border-rule bg-surface py-1.5 pr-2 pl-4"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-semibold text-ink">
-                      {line.name}
-                      {/* Archived stock shouldn't normally be ordered, but it
-                          can sit in the basket from before it was archived. */}
-                      {line.archived && (
-                        <span className="label ml-2 text-base font-normal text-flag">archived</span>
-                      )}
-                    </p>
-                    <p className="text-base text-stone">{line.addedBy ?? ''}</p>
-                  </div>
-
-                  <Stepper
-                    quantity={line.quantity}
-                    unit={line.unit}
-                    onChange={(next) => basket.setQuantity(line.ingredientId, next)}
-                  />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))
-      )}
+                    <Stepper
+                      quantity={line.quantity}
+                      unit={line.unit}
+                      onChange={(next) => setQuantity(line.ingredientId, next)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        )}
+      </div>
 
       {lineCount > 0 && (
-        <div className="fixed inset-x-0 bottom-0 border-t border-rule bg-surface/95 backdrop-blur">
-          <div className="mx-auto max-w-2xl px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-surface/95 backdrop-blur">
+          <div
+            className={`mx-auto ${columnWidth} px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]`}
+          >
             {confirming ? (
               <>
                 <p className="text-base font-semibold text-ink">
@@ -196,10 +184,10 @@ export function BasketScreen() {
                 <button
                   type="button"
                   onClick={() => setConfirming(true)}
-                  disabled={basket.unsaved.size > 0}
+                  disabled={unsavedCount > 0}
                   className={`${primaryButton} flex-1`}
                 >
-                  {basket.unsaved.size > 0 ? 'Not saved yet' : 'Finish'}
+                  {unsavedCount > 0 ? 'Not saved yet' : 'Finish'}
                 </button>
               </div>
             )}

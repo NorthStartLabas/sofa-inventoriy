@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ScreenHeader } from '../components/ScreenHeader'
-import { headerLink } from '../components/styles'
+import { columnWidth, headerLink } from '../components/styles'
 import { formatQuantity } from '../data/basket'
 import { fetchOrders, type Order } from '../data/orders'
 
@@ -34,7 +34,7 @@ export function HistoryScreen() {
   }, [load])
 
   return (
-    <div className="mx-auto min-h-screen max-w-2xl bg-surface pb-16">
+    <div className="bg-sand">
       <ScreenHeader
         title="History"
         leading={
@@ -48,66 +48,72 @@ export function HistoryScreen() {
         </Link>
       </ScreenHeader>
 
-      {error && (
-        <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
-          {error}
-        </p>
-      )}
+      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface pb-16 md:border-x md:border-rule`}>
+        {error && (
+          <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
+            {error}
+          </p>
+        )}
 
-      {orders === null ? (
-        <p className="px-4 py-8 text-base text-stone">Loading…</p>
-      ) : orders.length === 0 ? (
-        <p className="px-4 py-8 text-base text-stone">
-          No orders sent yet. They show up here once you finish one.
-        </p>
-      ) : (
-        <ul>
-          {orders.map((order) => {
-            const open = expanded === order.id
-            const total = order.order_lines.length
+        {orders === null ? (
+          <p className="px-4 py-8 text-base text-stone">Loading…</p>
+        ) : orders.length === 0 ? (
+          <p className="px-4 py-8 text-base text-stone">
+            No orders sent yet. They show up here once you finish one.
+          </p>
+        ) : (
+          <ul>
+            {orders.map((order) => {
+              const open = expanded === order.id
+              const total = order.order_lines.length
 
-            return (
-              <li key={order.id} className="border-b border-rule">
-                <button
-                  type="button"
-                  onClick={() => setExpanded(open ? null : order.id)}
-                  className="flex min-h-[44px] w-full items-center gap-2 px-4 py-2 text-left"
-                >
-                  <span className="flex-1 text-base font-medium tabular-nums text-ink">
-                    {sentAtLabel(order.sent_at)}
-                    {order.sent_by && (
-                      <span className="ml-2 font-normal text-stone">{order.sent_by}</span>
-                    )}
-                  </span>
-                  <span className="label text-base text-stone tabular-nums">
-                    {total} {total === 1 ? 'item' : 'items'}
-                  </span>
-                </button>
+              return (
+                <li key={order.id} className="border-b border-rule">
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(open ? null : order.id)}
+                    className="flex min-h-[44px] w-full items-center gap-2 px-4 py-2 text-left hover:bg-sand"
+                  >
+                    <span className="flex-1 text-base font-medium tabular-nums text-ink">
+                      {sentAtLabel(order.sent_at)}
+                      {order.sent_by && (
+                        <span className="ml-2 font-normal text-stone">{order.sent_by}</span>
+                      )}
+                    </span>
+                    <span className="label text-base text-stone tabular-nums">
+                      {total} {total === 1 ? 'item' : 'items'}
+                    </span>
+                  </button>
 
-                {open && (
-                  <ul className="pb-3">
-                    {/* Name and unit come off the line itself, so a past order
-                        keeps saying what it said — even after the ingredient is
-                        renamed, or deleted outright. */}
-                    {order.order_lines.map((line) => (
-                      <li
-                        key={line.id}
-                        className="flex items-baseline gap-2 px-4 py-1 text-base"
-                      >
-                        <span className="flex-1 text-ink">{line.ingredient_name}</span>
-                        <span className="tabular-nums">
-                          {formatQuantity(line.quantity)}
-                          {line.unit && <span className="ml-1 text-stone">{line.unit}</span>}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      )}
+                  {open && (
+                    // A 36-line order is a long scroll on a screen with room to
+                    // spare. Safe to reflow here and nowhere else in the app: this
+                    // is static text with nothing draggable in it.
+                    <ul className="pb-3 lg:columns-2">
+                      {/* Name and unit come off the line itself, so a past order
+                          keeps saying what it said — even after the ingredient is
+                          renamed, or deleted outright. */}
+                      {order.order_lines.map((line) => (
+                        <li
+                          key={line.id}
+                          // Or a line splits down the middle across the column break.
+                          className="flex break-inside-avoid items-baseline gap-2 px-4 py-1 text-base"
+                        >
+                          <span className="flex-1 text-ink">{line.ingredient_name}</span>
+                          <span className="tabular-nums">
+                            {formatQuantity(line.quantity)}
+                            {line.unit && <span className="ml-1 text-stone">{line.unit}</span>}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   )
 }
