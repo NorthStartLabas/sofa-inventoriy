@@ -3,18 +3,19 @@ import { Link } from 'react-router-dom'
 import { useBasket } from '../../basket/basketContext'
 import { IngredientRow } from '../../components/IngredientRow'
 import { useCatalogStore } from '../../data/catalogContext'
-import { isVisibleInOrder } from '../../lib/orderView'
+import { isVisibleInOrder, matchesQuery, normalize } from '../../lib/orderView'
 import type { Ingredient } from '../../types'
 
 /**
  * "I'm doing pasta tonight — what am I short of?" Dishes expand in place so
  * two of them can be checked against each other without navigating.
  */
-export function DishView() {
+export function DishView({ query }: { query: string }) {
   const { catalog } = useCatalogStore()
   const basket = useBasket()
   const [open, setOpen] = useState<Set<string>>(new Set())
 
+  const term = normalize(query)
   const locationRank = new Map(catalog.locations.map((l, index) => [l.id, index]))
   const byId = new Map(catalog.ingredients.map((i) => [i.id, i]))
 
@@ -22,7 +23,10 @@ export function DishView() {
     return catalog.dishIngredients
       .filter((di) => di.dish_id === dishId)
       .map((di) => byId.get(di.ingredient_id))
-      .filter((i): i is Ingredient => i !== undefined && isVisibleInOrder(i, basket.items))
+      .filter(
+        (i): i is Ingredient =>
+          i !== undefined && isVisibleInOrder(i, basket.items) && matchesQuery(i, term),
+      )
       .sort((a, b) => {
         // Route order inside a dish too — checking one still means a single
         // pass along the shelves rather than criss-crossing the kitchen.
@@ -53,12 +57,24 @@ export function DishView() {
     )
   }
 
+  // While searching, a dish with no match is noise — 26 headings hiding one hit.
+  // With the box empty every dish shows, including the ten that have nothing
+  // linked yet, since that emptiness is itself worth seeing.
+  const dishes = catalog.dishes
+    .map((dish) => ({ dish, items: ingredientsFor(dish.id) }))
+    .filter(({ items }) => term === '' || items.length > 0)
+
+  if (dishes.length === 0) {
+    return <p className="px-4 py-8 text-base text-stone">No ingredient matches “{query.trim()}”.</p>
+  }
+
   return (
     <>
-      {catalog.dishes.map((dish) => {
-        const items = ingredientsFor(dish.id)
+      {dishes.map(({ dish, items }) => {
         const inBasket = items.filter((i) => basket.items.has(i.id)).length
-        const isOpen = open.has(dish.id)
+        // A search opens every dish it matched, without writing to `open` —
+        // so clearing the box puts the collapse state back as you left it.
+        const isOpen = open.has(dish.id) || term !== ''
 
         return (
           <section key={dish.id}>

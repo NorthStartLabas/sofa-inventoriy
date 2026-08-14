@@ -35,6 +35,11 @@ export async function fetchOrders(limit = 25): Promise<Order[]> {
     .from('orders')
     .select('*, order_lines(*)')
     .order('sent_at', { ascending: false })
+    // Without this the lines come back in whatever order Postgres chose, which
+    // reshuffles between reads. Route order would suit the room better, but
+    // order_lines has no position column — and History is where you look one
+    // thing up, which is what alphabetical is for.
+    .order('ingredient_name', { referencedTable: 'order_lines' })
     .limit(limit)
   if (error) throw new Error(error.message)
   return data as Order[]

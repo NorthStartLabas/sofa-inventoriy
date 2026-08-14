@@ -1,52 +1,28 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useBasket } from '../../basket/basketContext'
 import { IngredientRow } from '../../components/IngredientRow'
-import { input } from '../../components/styles'
 import { useCatalogStore } from '../../data/catalogContext'
-import { isVisibleInOrder } from '../../lib/orderView'
+import { isVisibleInOrder, matchesQuery, normalize } from '../../lib/orderView'
 
-/** "I know what I want, don't make me walk." Everything, A–Z, filterable. */
-export function AllView() {
+/**
+ * "I know what I want, don't make me walk." Everything, A–Z. The search box
+ * used to live here; it moved to the shell so Route and Dish get it too.
+ */
+export function AllView({ query }: { query: string }) {
   const { catalog } = useCatalogStore()
   const basket = useBasket()
-  const [query, setQuery] = useState('')
 
   const locationNames = new Map(catalog.locations.map((l) => [l.id, l.name]))
-  const term = query.trim().toLowerCase()
+  const term = normalize(query)
 
   const items = catalog.ingredients
-    .filter((i) => isVisibleInOrder(i, basket.items))
-    .filter((i) => term === '' || i.name.toLowerCase().includes(term))
+    .filter((i) => isVisibleInOrder(i, basket.items) && matchesQuery(i, term))
     .sort((a, b) => a.name.localeCompare(b.name))
 
   const nothingAtAll = catalog.ingredients.filter((i) => isVisibleInOrder(i, basket.items)).length === 0
 
   return (
     <>
-      {/* top-11 clears the view switcher, which is sticky above it. */}
-      <div className="sticky top-11 z-20 flex items-center gap-2 border-b border-rule bg-sand px-3 py-2">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Find an ingredient"
-          autoCapitalize="off"
-          autoCorrect="off"
-          className={input}
-        />
-        {query !== '' && (
-          <button
-            type="button"
-            onClick={() => setQuery('')}
-            aria-label="Clear search"
-            className="h-11 w-11 shrink-0 rounded-md border border-rule bg-surface text-base text-stone"
-          >
-            ✕
-          </button>
-        )}
-      </div>
-
       {nothingAtAll ? (
         <p className="px-4 py-8 text-base text-stone">
           Nothing in the catalog yet.{' '}

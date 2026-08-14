@@ -46,3 +46,25 @@ export function isVisibleInOrder(
 ): boolean {
   return !ingredient.archived || basketItems.has(ingredient.id)
 }
+
+/**
+ * Fold case and diacritics before comparing. The catalog is Dutch — jalapeño,
+ * crème fraîche, pâté — and nobody reaches for the accent key on a phone with
+ * wet hands. NFD splits a letter from its accent so the accent can be dropped.
+ */
+export function normalize(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim()
+}
+
+/**
+ * Substring rather than prefix: half the catalog is two words ("Bloemkool
+ * paars", "Zwarte knoflook mayo") and the word you remember is often the second
+ * one. Pass a term already through `normalize` — once per render, not per row.
+ */
+export function matchesQuery(ingredient: Ingredient, normalizedTerm: string): boolean {
+  return normalizedTerm === '' || normalize(ingredient.name).includes(normalizedTerm)
+}

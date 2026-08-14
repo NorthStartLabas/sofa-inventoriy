@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useBasket } from '../../basket/basketContext'
 import { IngredientRow } from '../../components/IngredientRow'
 import { useCatalogStore } from '../../data/catalogContext'
-import { isVisibleInOrder } from '../../lib/orderView'
+import { isVisibleInOrder, matchesQuery, normalize } from '../../lib/orderView'
 
 /**
  * The walking route: locations in their dragged order, ingredients in theirs.
@@ -12,21 +12,31 @@ import { isVisibleInOrder } from '../../lib/orderView'
  * order actually means something in the room, so it's the only one that earns a
  * structural device saying so.
  */
-export function RouteView() {
+export function RouteView({ query }: { query: string }) {
   const { catalog } = useCatalogStore()
   const basket = useBasket()
+
+  const term = normalize(query)
 
   const sections = catalog.locations
     .map((location) => ({
       location,
       items: catalog.ingredients
-        .filter((i) => i.location_id === location.id && isVisibleInOrder(i, basket.items))
+        .filter(
+          (i) =>
+            i.location_id === location.id &&
+            // Two separate rules, composed rather than merged: visibility keeps
+            // an archived row that's already in the basket, search doesn't —
+            // typing a name means you want that name, archived or not.
+            isVisibleInOrder(i, basket.items) &&
+            matchesQuery(i, term),
+        )
         .sort((a, b) => a.sort_order - b.sort_order),
     }))
     .filter((section) => section.items.length > 0)
 
   if (sections.length === 0) {
-    return (
+    return term === '' ? (
       <p className="px-4 py-8 text-base text-stone">
         {catalog.locations.length === 0
           ? 'Nothing in the catalog yet. '
@@ -36,6 +46,8 @@ export function RouteView() {
         </Link>
         .
       </p>
+    ) : (
+      <p className="px-4 py-8 text-base text-stone">No ingredient matches “{query.trim()}”.</p>
     )
   }
 
@@ -46,8 +58,8 @@ export function RouteView() {
 
         return (
           <section key={location.id} className="border-l-[3px] border-ink/25">
-            {/* top-11 clears the view switcher, which is sticky above it. */}
-            <h2 className="sticky top-11 z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-rule border-l-ink bg-sand px-4 py-2">
+            {/* top-26 clears the switcher and the search band above it (104px). */}
+            <h2 className="sticky top-26 z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-rule border-l-ink bg-sand px-4 py-2">
               <span className="label text-base text-ink">{location.name}</span>
               {inBasket > 0 && (
                 <span className="text-base text-stone tabular-nums">

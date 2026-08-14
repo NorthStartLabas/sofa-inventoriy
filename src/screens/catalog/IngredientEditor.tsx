@@ -44,6 +44,19 @@ export function IngredientEditor({
   const toggleDish = (id: string) =>
     setDishIds((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]))
 
+  // Units are free text and drift: Fles/Fkes, Doos/doos, Pot/Potje all coexist
+  // in the catalog. Suggesting what's already in use catches the slip without
+  // taking away the ability to type something new. Most-used first, because the
+  // browser shows the list in the order it's given — alphabetical would put Bak
+  // in front of Fles, which is backwards for a kitchen that has 31 of the latter.
+  const unitsByUse = [...catalog.ingredients.reduce((counts, i) => {
+    const u = i.unit.trim()
+    if (u) counts.set(u, (counts.get(u) ?? 0) + 1)
+    return counts
+  }, new Map<string, number>())]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([u]) => u)
+
   function submit() {
     if (!name.trim() || !locationId) return
     onSave(
@@ -75,9 +88,15 @@ export function IngredientEditor({
         <input
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
-          placeholder="l, kg, block, tray, bag"
+          list="known-units"
+          placeholder="Fles, Pot, Zak, Doos"
           className={`${input} mt-1`}
         />
+        <datalist id="known-units">
+          {unitsByUse.map((u) => (
+            <option key={u} value={u} />
+          ))}
+        </datalist>
       </label>
 
       <label className="mt-3 block text-base text-stone">
