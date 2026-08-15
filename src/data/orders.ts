@@ -29,6 +29,60 @@ export async function finishOrder(sentBy: string | null): Promise<string> {
   return data as string
 }
 
+/** One line of an order that has already gone out today. */
+export type SentToday = {
+  by: string
+  quantity: number
+  unit: string | null
+  at: string
+}
+
+/**
+ * What has already been ordered today, keyed by ingredient.
+ *
+ * "Today" is the local day, worked out on the device rather than in SQL. The
+ * phone is standing in the kitchen and its clock is the kitchen's clock, which
+ * is both simpler and more honest than hard-coding Europe/Amsterdam into a
+ * query — an order sent at half past midnight belongs to the day the person
+ * thinks it does.
+ *
+ * `orders!inner` is what lets the date filter apply to the parent: without it
+ * PostgREST returns every line and merely nulls the ones that don't match.
+ * order_lines_ingredient_idx and orders_sent_at_idx already cover this.
+ */
+export async function fetchOrderedToday(): Promise<Map<string, SentToday[]>> {
+  const since = new Date()
+  since.setHours(0, 0, 0, 0)
+
+  const { data, error } = await supabase
+    .from('order_lines')
+    .select('ingredient_id, quantity, unit, orders!inner(sent_at, sent_by)')
+    .not('ingredient_id', 'is', null)
+    .gte('orders.sent_at', since.toISOString())
+  if (error) throw new Error(error.message)
+
+  type Row = {
+    ingredient_id: string
+    quantity: number
+    unit: string | null
+    orders: { sent_at: string; sent_by: string | null }
+  }
+
+  const map = new Map<string, SentToday[]>()
+  for (const row of (data ?? []) as unknown as Row[]) {
+    const entry: SentToday = {
+      by: row.orders.sent_by ?? 'Somebody',
+      quantity: row.quantity,
+      unit: row.unit,
+      at: row.orders.sent_at,
+    }
+    const list = map.get(row.ingredient_id)
+    if (list) list.push(entry)
+    else map.set(row.ingredient_id, [entry])
+  }
+  return map
+}
+
 /** Newest first. order_lines comes back embedded — one request, not one per order. */
 export async function fetchOrders(limit = 25): Promise<Order[]> {
   const { data, error } = await supabase

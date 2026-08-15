@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCatalogStore } from '../data/catalogContext'
 import { finishOrder } from '../data/orders'
-import { useDisplayName } from '../lib/displayName'
+import { useProfile } from '../auth/profileContext'
 import { groupBasket, orderText } from '../lib/orderText'
 import { useBasket } from './basketContext'
 
@@ -21,7 +21,7 @@ import { useBasket } from './basketContext'
 export function useOrderSend() {
   const { catalog, loading } = useCatalogStore()
   const basket = useBasket()
-  const { name } = useDisplayName()
+  const { name } = useProfile()
   const navigate = useNavigate()
 
   const [confirming, setConfirming] = useState(false)

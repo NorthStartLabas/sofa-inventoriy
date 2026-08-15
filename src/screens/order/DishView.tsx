@@ -47,7 +47,7 @@ export function DishView({ query }: { query: string }) {
 
   if (catalog.dishes.length === 0) {
     return (
-      <p className="px-4 py-8 text-base text-stone">
+      <p className="px-4 py-8 text-base text-ink-2">
         No dishes yet.{' '}
         <Link to="/catalog" className="text-ink underline underline-offset-4">
           Add one in the catalog
@@ -65,7 +65,7 @@ export function DishView({ query }: { query: string }) {
     .filter(({ items }) => term === '' || items.length > 0)
 
   if (dishes.length === 0) {
-    return <p className="px-4 py-8 text-base text-stone">No ingredient matches “{query.trim()}”.</p>
+    return <p className="px-4 py-8 text-base text-ink-2">No ingredient matches “{query.trim()}”.</p>
   }
 
   return (
@@ -78,7 +78,7 @@ export function DishView({ query }: { query: string }) {
 
         return (
           <section key={dish.id}>
-            <h2 className="border-b border-rule bg-sand">
+            <h2 className="border-b border-line bg-paper">
               <button
                 type="button"
                 onClick={() => toggle(dish.id)}
@@ -86,16 +86,16 @@ export function DishView({ query }: { query: string }) {
                 aria-expanded={isOpen}
               >
                 <span className="label text-base text-ink">{dish.name}</span>
-                <span className="flex-1 text-base text-stone tabular-nums">
+                <span className="flex-1 text-base text-ink-2 tabular-nums">
                   {inBasket > 0 ? `${inBasket} of ${items.length}` : items.length}
                 </span>
-                <span className="text-base text-stone">{isOpen ? '▾' : '▸'}</span>
+                <span className="text-base text-ink-2">{isOpen ? '▾' : '▸'}</span>
               </button>
             </h2>
 
             {isOpen &&
               (items.length === 0 ? (
-                <p className="bg-surface px-4 py-4 text-base text-stone">
+                <p className="bg-surface px-4 py-4 text-base text-ink-2">
                   Nothing linked to this dish yet.{' '}
                   <Link to="/catalog" className="text-ink underline underline-offset-4">
                     Pick its ingredients
@@ -114,7 +114,6 @@ export function DishView({ query }: { query: string }) {
                         quantity={quantity}
                         subtitle={quantity > 0 ? (line?.added_by ?? '') : ingredient.unit}
                         unsaved={basket.unsaved.has(ingredient.id)}
-                        onChange={(next) => basket.setQuantity(ingredient.id, next)}
                       />
                     )
                   })}

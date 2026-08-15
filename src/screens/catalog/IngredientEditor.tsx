@@ -71,8 +71,8 @@ export function IngredientEditor({
   }
 
   return (
-    <div className="border-b border-rule bg-sand px-3 py-4">
-      <label className="block text-base text-stone">
+    <div className="border-b border-line bg-paper px-3 py-4">
+      <label className="block text-base text-ink-2">
         Name
         <input
           autoFocus
@@ -83,7 +83,7 @@ export function IngredientEditor({
         />
       </label>
 
-      <label className="mt-3 block text-base text-stone">
+      <label className="mt-3 block text-base text-ink-2">
         Unit
         <input
           value={unit}
@@ -99,7 +99,7 @@ export function IngredientEditor({
         </datalist>
       </label>
 
-      <label className="mt-3 block text-base text-stone">
+      <label className="mt-3 block text-base text-ink-2">
         Location
         <select
           value={locationId}
@@ -114,7 +114,7 @@ export function IngredientEditor({
         </select>
       </label>
 
-      <label className="mt-3 block text-base text-stone">
+      <label className="mt-3 block text-base text-ink-2">
         Supplier
         <select
           value={supplierId}
@@ -132,7 +132,7 @@ export function IngredientEditor({
 
       {catalog.dishes.length > 0 && (
         <div className="mt-4">
-          <p className="text-base text-stone">Dishes</p>
+          <p className="text-base text-ink-2">Dishes</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {catalog.dishes.map((dish) => {
               const on = dishIds.includes(dish.id)
@@ -143,8 +143,8 @@ export function IngredientEditor({
                   onClick={() => toggleDish(dish.id)}
                   className={`min-h-[44px] rounded-full border px-4 text-base ${
                     on
-                      ? 'border-ink bg-apricot text-ink'
-                      : 'border-rule text-ink'
+                      ? 'border-wine bg-wine text-cream'
+                      : 'border-line text-ink'
                   }`}
                 >
                   {dish.name}
@@ -175,7 +175,7 @@ export function IngredientEditor({
       </div>
 
       {onDelete && (
-        <p className="mt-2 text-base text-stone">
+        <p className="mt-2 text-base text-ink-2">
           Archive hides it but keeps it orderable later. Delete removes it for good — past
           orders keep the name they were sent with.
         </p>

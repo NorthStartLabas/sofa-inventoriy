@@ -1,9 +1,22 @@
 import { createContext, useContext } from 'react'
 import type { BasketItem } from '../data/basket'
 
+/** Somebody else, and how much of it they already have waiting. */
+export type OtherBasket = {
+  userId: string
+  name: string
+  quantity: number
+}
+
 export type BasketValue = {
-  /** Keyed by ingredient_id — the same key the database enforces as unique. */
+  /** Yours, keyed by ingredient_id — half of the pair the database enforces. */
   items: Map<string, BasketItem>
+  /**
+   * Everyone else's, keyed by ingredient_id. Private baskets are what make this
+   * necessary: with one shared basket a duplicate was visible on the row, and
+   * now the only way to see it is to be told.
+   */
+  others: Map<string, OtherBasket[]>
   loading: boolean
   error: string | null
   /** Distinct ingredients in the basket. */

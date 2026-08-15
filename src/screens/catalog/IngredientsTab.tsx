@@ -22,7 +22,7 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
 
   if (catalog.locations.length === 0) {
     return (
-      <p className="px-4 py-8 text-base text-stone">
+      <p className="px-4 py-8 text-base text-ink-2">
         Add a location first — every ingredient has to live somewhere on the route.
       </p>
     )
@@ -119,7 +119,7 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
 
   return (
     <div className="pb-8">
-      <label className="flex min-h-[44px] items-center gap-2 px-4 text-base text-stone">
+      <label className="flex min-h-[44px] items-center gap-2 px-4 text-base text-ink-2">
         <input
           type="checkbox"
           checked={showArchived}
@@ -135,9 +135,9 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
           <section key={location.id}>
             {/* 45px, not 44: the tab row above is a 44px control plus a 1px
                 bottom border, and at 44 this pinned a pixel underneath it. */}
-            <h2 className="label sticky top-[45px] z-30 border-y border-rule bg-sand px-4 py-2 text-base text-ink">
+            <h2 className="label sticky top-[45px] z-30 border-y border-line bg-paper px-4 py-2 text-base text-ink">
               {location.name}
-              <span className="ml-2 font-normal text-stone">{items.length}</span>
+              <span className="num ml-2 text-ink-2">{items.length}</span>
             </h2>
 
             <div className="px-1">
@@ -161,16 +161,16 @@ export function IngredientsTab({ store }: { store: CatalogStore }) {
                     <button
                       type="button"
                       onClick={() => setEditingId(ingredient.id)}
-                      className="flex min-h-[44px] w-full items-center gap-2 border-b border-rule py-2 pr-3 text-left"
+                      className="flex min-h-[44px] w-full items-center gap-2 border-b border-line py-2 pr-3 text-left"
                     >
                       <span
                         className={`flex-1 text-base font-medium ${
-                          ingredient.archived ? 'text-stone line-through' : ''
+                          ingredient.archived ? 'text-ink-2 line-through' : ''
                         }`}
                       >
                         {ingredient.name}
                       </span>
-                      <span className="text-base text-stone">
+                      <span className="text-base text-ink-2">
                         {[
                           ingredient.unit || null,
                           supplierName(ingredient.supplier_id),

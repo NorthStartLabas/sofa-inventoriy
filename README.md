@@ -1,6 +1,6 @@
 # Kitchen orders
 
-Ingredient ordering for a two-person kitchen. Phones, wet hands, bright room.
+Ingredient ordering for a restaurant kitchen. Phones, wet hands, bright room.
 
 Live: https://northstartlabas.github.io/sofa-inventoriy/
 
@@ -24,12 +24,15 @@ Row Level Security and must never appear in this repo or the bundle.
 
 Run each file in `supabase/migrations/` once, in order, in the Supabase SQL editor.
 
-**Signups are open, by the owner's decision (2026-08-12).** Every table is readable and
-writable by any signed-in user — there are no roles and no per-user ownership — so an
-account is the whole database, and anyone who finds the Pages URL can create one. If that
-should change, the fix is an `allowed_emails` table enforced by a trigger on `auth.users`,
-or per-user RLS. Not the client's `shouldCreateUser` flag, which only changes the error
-message an unknown address sees.
+**Sign-up is closed (2026-08-15).** You make the accounts:
+
+1. Supabase → **Authentication → Users → Add user**, with a temporary password.
+2. Tell them the password. They're forced to choose their own the first time they sign in.
+
+Keep **Authentication → Providers → Email → "Allow new users to sign up"** off. Every
+table is readable by any signed-in user and most are writable by them — there are no roles
+— so an account is the whole database. It was open for three days and anyone who found the
+Pages URL could have taken one.
 
 ## Deployment
 
@@ -42,12 +45,15 @@ One-time setup:
 2. Repo **Settings → Secrets and variables → Actions**: add the two `VITE_` secrets
 3. Supabase **Authentication → URL Configuration → Redirect URLs**: add
    `https://northstartlabas.github.io/sofa-inventoriy/` and `http://localhost:5173/sofa-inventoriy/`
+   — still needed, for password-reset links.
 
 ## Notes
 
 - `HashRouter`, because GitHub Pages 404s on deep links with `BrowserRouter`.
-- The magic-link fragment is consumed in `src/lib/authCallback.ts` before the router
-  mounts, since Supabase and HashRouter both want to own `location.hash`.
+- Password-reset links come back in the hash and are consumed in `src/lib/authCallback.ts`
+  before the router mounts, since Supabase and HashRouter both want to own `location.hash`.
+- The installed app checks for a new version on a timer and whenever it comes back into
+  view, and takes one the next time you put the phone down and pick it up.
 
 ## Build phases
 
@@ -56,23 +62,13 @@ One-time setup:
 3. ~~Order screen (Location view), basket, steppers~~
 4. ~~Basket screen, WhatsApp export, finish order, history~~
 5. ~~Dish and All views~~
-6. Realtime sync, offline retry queue, PWA — **current**
+6. ~~Realtime sync, offline retry queue, PWA~~ — **current**
 
-Phase 6 was dropped once and then reinstated: real use made the case for it. Two of the
-first four orders went out from different phones an hour apart, so "two people rarely
-order at the same moment" stopped being true.
+Still unbuilt from phase 6: the location sweep. Missing-item hints ("ordered in 3 of the
+last 10") were overtaken by the already-ordered warning below, which answers the same
+question with today's data rather than a ten-order average.
 
-What landed: the basket syncs live between phones, writes that can't reach the server are
-queued on the device and replayed when signal returns, and the app installs to the home
-screen. Concurrent edits to the *same* row still resolve last-write-wins — nothing merges
-— but both phones now agree on the result instead of disagreeing silently.
-
-Still unbuilt from that list: missing-item hints ("ordered in 3 of the last 10") and the
-location sweep.
-
-### Since then
-
-Three things came out of the first week of real use:
+### Week one
 
 **The message no longer says "No supplier".** Anything with a supplier is grouped under it;
 everything else is grouped by *location*, in walking-route order. The old behaviour only
@@ -81,11 +77,39 @@ was filled in, every message carried a `*No supplier*` block. Locations are some
 person receiving the list can actually check against the shelves.
 
 **You're asked for your name once, before the app opens.** `added_by` is the only thing the
-name is for, and nothing ever asked for one, so lines went out attributed to nobody. It's
-still per-device, still grants nothing, and is still changed from the header afterwards.
+name is for, and nothing ever asked for one, so lines went out attributed to nobody.
 
 **It works on a tablet and a computer.** Below 768px nothing changed — the phone layout is
-the one in service. Above it the column widens and sits as a sheet on the sand ground; from
+the one in service. Above it the column widens and sits as a sheet on the paper ground; from
 1024px the Order screen splits in two, with the basket live beside the list instead of
-behind a tap, and the bottom bar drops away. The PWA is no longer locked to portrait, which
-it had to stop being for an installed iPad to reach any of this.
+behind a tap, and the bottom bar drops away.
+
+### Week two
+
+Six accounts and several names later, three assumptions had to go.
+
+**Sign in with a password.** The magic link never worked properly on an iPhone with the app
+on the home screen: tapping it in Mail opens Safari, the session lands there, and the
+installed app stays signed out forever. Now you type a password where you already are. The
+only email left is a password reset. Sign-up is closed and accounts are made for people —
+which also closes a hole that had been open since the 12th.
+
+**Your name is on your account, not on the phone.** It used to live in each device's
+localStorage, which is why a laptop asked for a name and a phone that had set one months
+earlier never did — they genuinely held different state, and the phone looked broken. Now it
+follows you to anything you sign in on, and one name is all anyone ever sets.
+
+**A basket each.** Two people building one shared basket meant the second to press Finish
+sent an order that had already gone out. Your Finish now sends only your basket, and History
+shows one order per person.
+
+**And, because of that, a warning.** With one shared basket you could see a duplicate — the
+quantity was simply already there. Now the only way to see it is to be told, so adding
+something somebody else ordered today, or has waiting in their basket right now, asks first.
+It asks once per ingredient, on the way up from zero, and remembers the answer.
+
+**The theme is the management dashboard's**, copied from
+`NorthStartLabas/sofamaastricht-dashboard`: cream paper, burgundy accent, Cormorant Garamond
+over Inter. Two apps for one restaurant shouldn't look like two restaurants. What didn't come
+across is its sizing — that's a laptop dashboard at 13px, and this is still 16px minimum with
+44px targets, because it's still read standing up with wet hands.

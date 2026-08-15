@@ -35,7 +35,7 @@ export function BasketScreen() {
   } = useOrderSend()
 
   return (
-    <div className="bg-sand">
+    <div className="bg-paper">
       <ScreenHeader
         title="Basket"
         leading={
@@ -49,17 +49,17 @@ export function BasketScreen() {
         </Link>
       </ScreenHeader>
 
-      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface pb-40 md:border-x md:border-rule`}>
+      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface pb-40 md:border-x md:border-line`}>
         {error && (
-          <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
+          <p className="border-y border-bad/30 bg-bad-bg px-4 py-3 text-base text-bad">
             {error}
           </p>
         )}
 
         {loading ? (
-          <p className="px-4 py-8 text-base text-stone">Loading…</p>
+          <p className="px-4 py-8 text-base text-ink-2">Loading…</p>
         ) : lineCount === 0 ? (
-          <p className="px-4 py-8 text-base text-stone">
+          <p className="px-4 py-8 text-base text-ink-2">
             Nothing in the basket yet.{' '}
             <Link to="/" className="underline underline-offset-4">
               Walk the route
@@ -69,9 +69,9 @@ export function BasketScreen() {
         ) : (
           groups.map((group) => (
             <section key={group.key}>
-              <h2 className="sticky top-0 z-10 flex items-center gap-2 border-y border-rule bg-sand px-4 py-2">
+              <h2 className="sticky top-0 z-10 flex items-center gap-2 border-y border-line bg-paper px-4 py-2">
                 <span className="label text-base text-ink">{group.heading}</span>
-                <span className="flex-1 truncate text-base text-stone tabular-nums">
+                <span className="flex-1 truncate text-base text-ink-2 tabular-nums">
                   {group.lines.length}
                   {/* The heading says the location, because that's what belongs
                       in a message to an outside supplier. This is the half that
@@ -105,7 +105,7 @@ export function BasketScreen() {
                 {group.lines.map((line) => (
                   <li
                     key={line.ingredientId}
-                    className="flex items-center gap-2 border-b border-rule bg-surface py-1.5 pr-2 pl-4"
+                    className="flex items-center gap-2 border-b border-line bg-surface py-1.5 pr-2 pl-4"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-base font-semibold text-ink">
@@ -113,10 +113,10 @@ export function BasketScreen() {
                         {/* Archived stock shouldn't normally be ordered, but it
                             can sit in the basket from before it was archived. */}
                         {line.archived && (
-                          <span className="label ml-2 text-base font-normal text-flag">archived</span>
+                          <span className="label ml-2 text-base font-normal text-bad">archived</span>
                         )}
                       </p>
-                      <p className="text-base text-stone">{line.addedBy ?? ''}</p>
+                      <p className="text-base text-ink-2">{line.addedBy ?? ''}</p>
                     </div>
 
                     <Stepper
@@ -133,7 +133,7 @@ export function BasketScreen() {
       </div>
 
       {lineCount > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-surface/95 backdrop-blur">
+        <div className="lift-2 fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur">
           <div
             className={`mx-auto ${columnWidth} px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]`}
           >
@@ -142,7 +142,7 @@ export function BasketScreen() {
                 <p className="text-base font-semibold text-ink">
                   Send {lineCount} {lineCount === 1 ? 'item' : 'items'} and empty the basket?
                 </p>
-                <p className="mt-1 text-base text-stone">
+                <p className="mt-1 text-base text-ink-2">
                   It stays in History either way.
                 </p>
                 <div className="mt-3 flex gap-2">

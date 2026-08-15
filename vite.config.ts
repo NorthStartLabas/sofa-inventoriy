@@ -13,10 +13,17 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      // The kitchen never opens a store to update anything. A new deploy has to
-      // arrive on its own, and being one version behind mid-service is worse
-      // than a reload.
-      registerType: 'autoUpdate',
+      // The kitchen never opens a store to update anything, so a new deploy has
+      // to arrive on its own — but it should arrive at a moment nobody is
+      // mid-tap. 'prompt' makes a new version wait instead of seizing the page;
+      // src/lib/serviceWorker.ts decides when to take it (next time the phone
+      // comes out of a pocket) and, just as importantly, actually goes looking
+      // for one. 'autoUpdate' plus the injected registration did neither: a
+      // home-screen app is never navigated, so it never checked at all.
+      registerType: 'prompt',
+      // We register from src/lib/serviceWorker.ts. Without this the plugin also
+      // injects its own <script>, and the app registers twice.
+      injectRegister: null,
       manifest: {
         name: 'SOFA Kitchen orders',
         short_name: 'Kitchen',
@@ -27,10 +34,10 @@ export default defineConfig({
         // No `orientation` lock. It was 'portrait', which is right for a phone
         // and wrong for the tablet the two-pane layout exists for — an installed
         // iPad could never have turned sideways to reach it.
-        // Matches ScreenHeader, so the status bar continues the anthracite band
+        // Matches the top of ScreenHeader's gradient, so the status bar continues
         // instead of interrupting it.
-        theme_color: '#293133',
-        background_color: '#fff7ee',
+        theme_color: '#8a3949',
+        background_color: '#f5f0e8',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useProfile } from '../auth/profileContext'
 import {
   BasketWriteError,
   fetchBasket,
@@ -6,7 +7,6 @@ import {
   type BasketItem,
   type BasketWrite,
 } from '../data/basket'
-import { useDisplayName } from '../lib/displayName'
 import { supabase } from '../lib/supabase'
 import { BasketContext, type BasketValue } from './basketContext'
 import { clearQueue, dequeue, enqueue, readQueue } from './retryQueue'
@@ -17,16 +17,24 @@ import { clearQueue, dequeue, enqueue, readQueue } from './retryQueue'
  */
 const WRITE_DELAY_MS = 400
 
+/**
+ * Every basket row in the building lives in one map, keyed by owner and
+ * ingredient — the same pair the database enforces as unique. Yours and theirs
+ * arrive through one query and one realtime channel; they're only separated on
+ * the way out.
+ */
+const rowKey = (row: { user_id: string; ingredient_id: string }) =>
+  `${row.user_id}:${row.ingredient_id}`
+
 export function BasketProvider({ children }: { children: ReactNode }) {
-  const { name } = useDisplayName()
-  const [items, setItems] = useState<Map<string, BasketItem>>(new Map())
+  const { userId, name, names } = useProfile()
+  const [rows, setRows] = useState<Map<string, BasketItem>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [unsaved, setUnsaved] = useState<Set<string>>(() => {
-    // A queue left over from the last session, before anything is tapped.
-    const queued = readQueue()
-    return new Set(queued.map((e) => e.ingredient_id))
-  })
+  // A queue left over from the last session, before anything is tapped.
+  const [unsaved, setUnsaved] = useState<Set<string>>(
+    () => new Set(readQueue(userId).map((e) => e.ingredient_id)),
+  )
 
   const timers = useRef(new Map<string, number>())
   // The write itself, kept next to its timer so a pending one can still be sent
@@ -43,8 +51,8 @@ export function BasketProvider({ children }: { children: ReactNode }) {
 
   const reload = useCallback(async () => {
     try {
-      const rows = await fetchBasket()
-      setItems(new Map(rows.map((row) => [row.ingredient_id, row])))
+      const fetched = await fetchBasket()
+      setRows(new Map(fetched.map((row) => [rowKey(row), row])))
       setError(null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load the basket.')
@@ -76,7 +84,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
     async (write: BasketWrite) => {
       try {
         await performWrite(write)
-        dequeue(write.ingredient_id)
+        dequeue(write.user_id, write.ingredient_id)
         markUnsaved(write.ingredient_id, false)
       } catch (e) {
         if (e instanceof BasketWriteError && e.retriable) {
@@ -86,7 +94,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
           throw e
         }
         setError(e instanceof Error ? e.message : 'That change did not save.')
-        dequeue(write.ingredient_id)
+        dequeue(write.user_id, write.ingredient_id)
         markUnsaved(write.ingredient_id, false)
         await reload()
       }
@@ -96,7 +104,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
 
   /** Replay whatever is queued, oldest first. Resolves to what's left. */
   const drainQueue = useCallback(async () => {
-    for (const entry of readQueue()) {
+    for (const entry of readQueue(userId)) {
       try {
         await runWrite(entry)
       } catch {
@@ -104,8 +112,8 @@ export function BasketProvider({ children }: { children: ReactNode }) {
         break
       }
     }
-    return readQueue().length
-  }, [runWrite])
+    return readQueue(userId).length
+  }, [runWrite, userId])
 
   const flush = useCallback(async () => {
     timers.current.forEach((timer) => window.clearTimeout(timer))
@@ -122,14 +130,14 @@ export function BasketProvider({ children }: { children: ReactNode }) {
         break
       }
     }
-    const left = readQueue().length
+    const left = readQueue(userId).length
     if (left > 0) {
       throw new Error(
         `${left} ${left === 1 ? 'change hasn’t' : 'changes haven’t'} reached the server yet. ` +
           'Wait for signal — sending now would leave them out of the order.',
       )
     }
-  }, [runWrite, drainQueue])
+  }, [runWrite, drainQueue, userId])
 
   // A tap followed within 400ms by locking the phone used to vanish: the timer
   // simply never fired. Hiding the page is the last reliable moment to send.
@@ -141,8 +149,8 @@ export function BasketProvider({ children }: { children: ReactNode }) {
     const onHide = () => {
       if (document.visibilityState === 'hidden') quietFlush()
       // Coming back is also the cheapest moment to catch up on both fronts:
-      // anything queued while there was no signal, and anything the other
-      // phone changed while a dropped realtime connection wasn't reporting it.
+      // anything queued while there was no signal, and anything anyone else
+      // changed while a dropped realtime connection wasn't reporting it.
       else {
         void drainQueue()
         void reload()
@@ -161,15 +169,16 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   }, [flush, drainQueue, reload])
 
   /**
-   * Two phones, one basket. basket_items is in the supabase_realtime
-   * publication with replica identity full (migration 0001) — the latter is
-   * what makes DELETE usable, since without it payload.old carries only the
-   * primary key and this Map is keyed by ingredient_id.
+   * One channel for every basket, not just this account's.
    *
-   * This does not merge simultaneous edits: stepping the same item on two
-   * phones still resolves last-write-wins at the row level, exactly as the
-   * upsert always did. What it fixes is the two phones then showing different
-   * numbers and nobody knowing which one Finish will send.
+   * basket_items is in the supabase_realtime publication with replica identity
+   * full (migration 0001) — the latter is what makes DELETE usable, since
+   * without it payload.old carries only the primary key, and both the map key
+   * and the "whose is it" question need user_id.
+   *
+   * Your own rows still ignore their echo while a change is in flight, or the
+   * value we sent a moment ago would overwrite a newer tap. Somebody else's are
+   * always applied: nothing local is racing them.
    */
   useEffect(() => {
     const channel = supabase
@@ -179,17 +188,19 @@ export function BasketProvider({ children }: { children: ReactNode }) {
         { event: '*', schema: 'public', table: 'basket_items' },
         (payload) => {
           const row = (payload.new ?? payload.old) as Partial<BasketItem>
-          const id = row.ingredient_id
-          if (!id) return
-          // Our own writes echo back. Ignore anything for an ingredient with a
-          // change still in flight, or the echo would overwrite a newer tap
-          // with the value we sent a moment ago.
-          if (pending.current.has(id) || unsavedRef.current.has(id)) return
+          if (!row.ingredient_id || !row.user_id) return
+          if (
+            row.user_id === userId &&
+            (pending.current.has(row.ingredient_id) || unsavedRef.current.has(row.ingredient_id))
+          ) {
+            return
+          }
 
-          setItems((prev) => {
+          const key = rowKey(row as BasketItem)
+          setRows((prev) => {
             const next = new Map(prev)
-            if (payload.eventType === 'DELETE') next.delete(id)
-            else next.set(id, payload.new as BasketItem)
+            if (payload.eventType === 'DELETE') next.delete(key)
+            else next.set(key, payload.new as BasketItem)
             return next
           })
         },
@@ -203,7 +214,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
     return () => {
       void supabase.removeChannel(channel)
     }
-  }, [reload])
+  }, [reload, userId])
 
   const schedule = useCallback(
     (write: BasketWrite) => {
@@ -222,14 +233,14 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   const remove = useCallback<BasketValue['remove']>(
     (ingredientId) => {
       setError(null)
-      setItems((prev) => {
+      setRows((prev) => {
         const next = new Map(prev)
-        next.delete(ingredientId)
+        next.delete(`${userId}:${ingredientId}`)
         return next
       })
-      schedule({ ingredient_id: ingredientId, quantity: 0, added_by: null })
+      schedule({ user_id: userId, ingredient_id: ingredientId, quantity: 0, added_by: null })
     },
-    [schedule],
+    [schedule, userId],
   )
 
   const setQuantity = useCallback<BasketValue['setQuantity']>(
@@ -242,11 +253,13 @@ export function BasketProvider({ children }: { children: ReactNode }) {
       }
 
       setError(null)
-      setItems((prev) => {
+      const key = `${userId}:${ingredientId}`
+      setRows((prev) => {
         const next = new Map(prev)
-        const existing = next.get(ingredientId)
-        next.set(ingredientId, {
-          id: existing?.id ?? `local:${ingredientId}`,
+        const existing = next.get(key)
+        next.set(key, {
+          id: existing?.id ?? `local:${key}`,
+          user_id: userId,
           ingredient_id: ingredientId,
           quantity: rounded,
           added_by: nameRef.current || null,
@@ -256,33 +269,72 @@ export function BasketProvider({ children }: { children: ReactNode }) {
       })
 
       schedule({
+        user_id: userId,
         ingredient_id: ingredientId,
         quantity: rounded,
         added_by: nameRef.current || null,
       })
     },
-    [schedule, remove],
+    [schedule, remove, userId],
   )
 
   /**
-   * After finish_order has already emptied basket_items server-side. Drops
+   * After finish_order has already emptied *your* rows server-side. Drops
    * pending writes on purpose — they refer to rows that no longer exist. The
    * queue is dropped for the same reason, and it is safe to: flush() had to
    * come back clean before the order could be sent at all.
+   *
+   * Everyone else's rows stay. Someone is very likely mid-order on the next
+   * stove, and finish_order deliberately left theirs alone.
    */
   const clear = useCallback(() => {
     timers.current.forEach((timer) => window.clearTimeout(timer))
     timers.current.clear()
     pending.current.clear()
-    clearQueue()
+    clearQueue(userId)
     setUnsaved(new Set())
-    setItems(new Map())
+    setRows((prev) => {
+      const next = new Map<string, BasketItem>()
+      for (const [key, row] of prev) if (row.user_id !== userId) next.set(key, row)
+      return next
+    })
     setError(null)
-  }, [])
+  }, [userId])
+
+  /** Yours, keyed by ingredient — what every screen means by "the basket". */
+  const items = useMemo(() => {
+    const mine = new Map<string, BasketItem>()
+    for (const row of rows.values()) if (row.user_id === userId) mine.set(row.ingredient_id, row)
+    return mine
+  }, [rows, userId])
+
+  /**
+   * Everyone else's, so the app can say who already has something before you
+   * add it again. Baskets being private is exactly what makes this necessary:
+   * with one shared basket you could see the duplicate, and now you can't.
+   */
+  const others = useMemo(() => {
+    const map = new Map<string, { userId: string; name: string; quantity: number }[]>()
+    for (const row of rows.values()) {
+      if (row.user_id === userId || row.quantity <= 0) continue
+      const entry = {
+        userId: row.user_id,
+        // The profile name if we have it, else whatever the row was tagged with
+        // — a name is better than "somebody", and both beat a uuid.
+        name: names.get(row.user_id) || row.added_by || 'Somebody',
+        quantity: row.quantity,
+      }
+      const list = map.get(row.ingredient_id)
+      if (list) list.push(entry)
+      else map.set(row.ingredient_id, [entry])
+    }
+    return map
+  }, [rows, userId, names])
 
   const value = useMemo<BasketValue>(
     () => ({
       items,
+      others,
       loading,
       error,
       count: items.size,
@@ -293,7 +345,7 @@ export function BasketProvider({ children }: { children: ReactNode }) {
       clear,
       flush,
     }),
-    [items, loading, error, unsaved, setQuantity, remove, reload, clear, flush],
+    [items, others, loading, error, unsaved, setQuantity, remove, reload, clear, flush],
   )
 
   return <BasketContext.Provider value={value}>{children}</BasketContext.Provider>

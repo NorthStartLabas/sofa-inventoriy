@@ -96,7 +96,7 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
 
   return (
     <div className="px-4 py-4">
-      <p className="mb-4 text-base text-stone">
+      <p className="mb-4 text-base text-ink-2">
         Suppliers group the basket and split the message, so each one gets only its own
         list. Open a supplier to tick off everything it delivers.
       </p>
@@ -106,7 +106,7 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
         const term = normalize(filter)
 
         return (
-          <div key={supplier.id} className="border-b border-rule">
+          <div key={supplier.id} className="border-b border-line">
             <div className="flex items-center gap-2 py-2">
               {editing === supplier.id ? (
                 <>
@@ -136,7 +136,7 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
                     className="min-h-[44px] flex-1 text-left text-base font-medium"
                   >
                     {supplier.name}
-                    <span className="ml-2 font-normal text-stone">{countFor(supplier.id)}</span>
+                    <span className="ml-2 font-normal text-ink-2">{countFor(supplier.id)}</span>
                   </button>
                   <button
                     type="button"
@@ -180,7 +180,7 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
 
                   return (
                     <div key={location.id} className="mt-2">
-                      <p className="label text-base text-stone">{location.name}</p>
+                      <p className="label text-base text-ink-2">{location.name}</p>
                       {items.map((ingredient) => {
                         const mine = ingredient.supplier_id === supplier.id
                         // An ingredient has one supplier, so ticking it here
@@ -203,7 +203,7 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
                               className="h-5 w-5"
                             />
                             {ingredient.name}
-                            {heldBy && <span className="text-stone">→ {heldBy}</span>}
+                            {heldBy && <span className="text-ink-2">→ {heldBy}</span>}
                           </label>
                         )
                       })}
@@ -217,7 +217,7 @@ export function SuppliersTab({ store }: { store: CatalogStore }) {
       })}
 
       {catalog.suppliers.length === 0 && (
-        <p className="py-6 text-base text-stone">No suppliers yet.</p>
+        <p className="py-6 text-base text-ink-2">No suppliers yet.</p>
       )}
 
       <div className="mt-6 flex gap-2">

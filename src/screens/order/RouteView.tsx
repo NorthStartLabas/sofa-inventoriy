@@ -37,7 +37,7 @@ export function RouteView({ query }: { query: string }) {
 
   if (sections.length === 0) {
     return term === '' ? (
-      <p className="px-4 py-8 text-base text-stone">
+      <p className="px-4 py-8 text-base text-ink-2">
         {catalog.locations.length === 0
           ? 'Nothing in the catalog yet. '
           : 'No ingredients on the route yet. '}
@@ -47,7 +47,7 @@ export function RouteView({ query }: { query: string }) {
         .
       </p>
     ) : (
-      <p className="px-4 py-8 text-base text-stone">No ingredient matches “{query.trim()}”.</p>
+      <p className="px-4 py-8 text-base text-ink-2">No ingredient matches “{query.trim()}”.</p>
     )
   }
 
@@ -57,15 +57,15 @@ export function RouteView({ query }: { query: string }) {
         const inBasket = items.filter((i) => basket.items.has(i.id)).length
 
         return (
-          <section key={location.id} className="border-l-[3px] border-ink/25">
+          <section key={location.id} className="border-l-[3px] border-wine/25">
             {/* Clears the switcher and the search band above it: 44 + 60 for the
                 controls, plus the 1px bottom border each band carries. Measured,
                 not assumed — as 104 it pinned 2px under the block and lost its
                 own top hairline. */}
-            <h2 className="sticky top-[106px] z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-rule border-l-ink bg-sand px-4 py-2">
+            <h2 className="sticky top-[106px] z-10 -ml-[3px] flex items-baseline gap-2 border-y border-l-[3px] border-line border-l-wine bg-paper px-4 py-2">
               <span className="label text-base text-ink">{location.name}</span>
               {inBasket > 0 && (
-                <span className="text-base text-stone tabular-nums">
+                <span className="text-base text-ink-2 tabular-nums">
                   {inBasket} of {items.length}
                 </span>
               )}
@@ -84,7 +84,6 @@ export function RouteView({ query }: { query: string }) {
                     // a row is in the basket this slot says who put it there.
                     subtitle={quantity > 0 ? (line?.added_by ?? '') : ingredient.unit}
                     unsaved={basket.unsaved.has(ingredient.id)}
-                    onChange={(next) => basket.setQuantity(ingredient.id, next)}
                   />
                 )
               })}

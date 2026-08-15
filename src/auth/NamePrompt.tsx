@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { primaryButton } from '../components/styles'
-import { useDisplayName } from '../lib/displayName'
+import { useProfile } from './profileContext'
 
 /**
  * The second half of signing in: which of you is holding this phone.
@@ -18,7 +18,7 @@ import { useDisplayName } from '../lib/displayName'
  * read or write, and it has never known about this name.
  */
 export function NamePrompt() {
-  const { setName } = useDisplayName()
+  const { setName } = useProfile()
   // setName trims, so the field can't write straight through it — a space
   // mid-name would vanish as you typed it. Same reason as NameChip.
   const [draft, setDraft] = useState('')
@@ -26,25 +26,27 @@ export function NamePrompt() {
   function submit(e: FormEvent) {
     e.preventDefault()
     if (!draft.trim()) return
-    setName(draft)
+    // Optimistic inside the provider, so the gate opens on this frame rather
+    // than after a round trip. A failure surfaces in the header, not here.
+    void setName(draft)
   }
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
       {/* The route rail again, the way SignIn uses it — same moment, same cover. */}
-      <div className="border-l-[3px] border-ink pl-4">
-        <h1 className="label text-5xl leading-[0.95] tracking-[0.005em] text-ink">
+      <div className="border-l-[3px] border-wine pl-4">
+        <h1 className="page-title text-6xl text-ink">
           Who&rsquo;s
           <br />
           ordering?
         </h1>
-        <p className="mt-3 text-base text-stone">
+        <p className="mt-3 text-base text-ink-2">
           Your name goes on every line you add, so the other person knows who asked for it.
         </p>
       </div>
 
       <form onSubmit={submit} className="mt-10">
-        <label htmlFor="display-name" className="label text-base text-stone">
+        <label htmlFor="display-name" className="label text-base text-ink-2">
           Name
         </label>
         <input
@@ -57,7 +59,7 @@ export function NamePrompt() {
           autoCorrect="off"
           autoComplete="off"
           placeholder="Sanne"
-          className="mt-1 min-h-[52px] w-full rounded-md border border-rule bg-surface px-4 text-base text-ink outline-none placeholder:text-stone focus:border-ink"
+          className="mt-1 min-h-[52px] w-full rounded-[13px] border border-line bg-surface px-4 text-base text-ink outline-none placeholder:text-ink-2 focus:border-wine"
         />
         <button
           type="submit"
@@ -68,7 +70,7 @@ export function NamePrompt() {
         </button>
       </form>
 
-      <p className="mt-6 border-l-2 border-rule pl-4 text-base text-stone">
+      <p className="mt-6 border-l-2 border-line pl-4 text-base text-ink-2">
         Only on this phone. Change it any time from the header.
       </p>
     </div>

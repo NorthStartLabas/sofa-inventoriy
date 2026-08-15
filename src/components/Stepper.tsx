@@ -40,7 +40,7 @@ export function Stepper({ quantity, unit, onChange }: Props) {
         aria-label="Decrease"
         disabled={quantity <= 0}
         onClick={() => onChange(quantity - 1)}
-        className="mark h-11 w-11 shrink-0 rounded-md border border-rule bg-surface text-2xl leading-none font-medium text-ink disabled:border-rule/60 disabled:bg-transparent disabled:text-rule"
+        className="mark h-11 w-11 shrink-0 rounded-full border border-line bg-surface text-2xl leading-none font-medium text-ink disabled:border-line/60 disabled:bg-transparent disabled:text-line-2"
       >
         −
       </button>
@@ -58,7 +58,7 @@ export function Stepper({ quantity, unit, onChange }: Props) {
             if (e.key === 'Escape') setTyping(false)
           }}
           autoFocus
-          className="h-11 w-16 rounded-md border-2 border-ink bg-surface text-center text-base tabular-nums outline-none"
+          className="h-11 w-16 rounded-[13px] border-2 border-wine bg-surface text-center text-base tabular-nums outline-none"
         />
       ) : (
         <button
@@ -75,7 +75,7 @@ export function Stepper({ quantity, unit, onChange }: Props) {
           {quantity > 0 && (
             <>
               {formatQuantity(quantity)}
-              {unit && <span className="ml-1 font-normal text-stone">{unit}</span>}
+              {unit && <span className="ml-1 font-normal text-ink-2">{unit}</span>}
             </>
           )}
         </button>
@@ -85,7 +85,7 @@ export function Stepper({ quantity, unit, onChange }: Props) {
         type="button"
         aria-label="Increase"
         onClick={() => onChange(quantity + 1)}
-        className="mark h-11 w-11 shrink-0 rounded-md border border-rule bg-surface text-2xl leading-none font-medium text-ink"
+        className="mark h-11 w-11 shrink-0 rounded-full border border-line bg-surface text-2xl leading-none font-medium text-ink"
       >
         +
       </button>

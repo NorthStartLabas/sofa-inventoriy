@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/authContext'
-import { useDisplayName } from '../lib/displayName'
+import { useProfile } from '../auth/profileContext'
 import { input, quietButton } from './styles'
 
 /**
@@ -9,7 +9,7 @@ import { input, quietButton } from './styles'
  * out one tap from the Order screen without spending header width on it.
  */
 export function NameChip() {
-  const { name, setName } = useDisplayName()
+  const { name, setName } = useProfile()
   const { signOut } = useAuth()
   const [open, setOpen] = useState(false)
   // setName trims, so the field can't write straight through it — a space mid
@@ -21,7 +21,7 @@ export function NameChip() {
     if (!open) return
 
     const close = () => {
-      setName(draft)
+      void setName(draft)
       setOpen(false)
     }
     const onPointerDown = (e: PointerEvent) => {
@@ -47,15 +47,15 @@ export function NameChip() {
           setDraft(name)
           setOpen((was) => !was)
         }}
-        className="h-11 rounded-md px-2 text-base text-sand/75"
+        className="h-11 rounded-full px-3 text-base text-cream/75"
       >
         {name || 'Set name'}
       </button>
 
       {open && (
         // Sits above the sticky view switcher, which is z-40.
-        <div className="absolute top-full right-0 z-50 mt-1 w-60 rounded-[10px] border border-rule bg-surface p-3 shadow-lg">
-          <label className="label block text-base text-stone">
+        <div className="absolute top-full right-0 z-50 mt-1 w-60 lift-2 rounded-[18px] border border-line bg-surface p-3">
+          <label className="label block text-base text-ink-2">
             Your name
             <input
               autoFocus
@@ -66,13 +66,12 @@ export function NameChip() {
             />
           </label>
 
-          <div className="mt-2 border-t border-rule pt-1">
+          <div className="mt-2 border-t border-line pt-1">
             <button
               type="button"
-              onClick={() => {
-                setName(draft)
-                void signOut()
-              }}
+              // Save first, then go: the name update needs the session it's
+              // being written with. `finally` so a failed save still signs out.
+              onClick={() => void setName(draft).finally(() => signOut())}
               className={`${quietButton} w-full px-0 text-left`}
             >
               Sign out

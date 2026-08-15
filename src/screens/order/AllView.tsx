@@ -24,7 +24,7 @@ export function AllView({ query }: { query: string }) {
   return (
     <>
       {nothingAtAll ? (
-        <p className="px-4 py-8 text-base text-stone">
+        <p className="px-4 py-8 text-base text-ink-2">
           Nothing in the catalog yet.{' '}
           <Link to="/catalog" className="text-ink underline underline-offset-4">
             Add your ingredients
@@ -32,7 +32,7 @@ export function AllView({ query }: { query: string }) {
           .
         </p>
       ) : items.length === 0 ? (
-        <p className="px-4 py-8 text-base text-stone">
+        <p className="px-4 py-8 text-base text-ink-2">
           No ingredient matches “{query.trim()}”.
         </p>
       ) : (
@@ -50,7 +50,6 @@ export function AllView({ query }: { query: string }) {
                 quantity={quantity}
                 subtitle={where}
                 unsaved={basket.unsaved.has(ingredient.id)}
-                onChange={(next) => basket.setQuantity(ingredient.id, next)}
               />
             )
           })}

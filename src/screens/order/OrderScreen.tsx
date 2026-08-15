@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AlreadyProvider } from '../../basket/AlreadyProvider'
 import { useBasket } from '../../basket/basketContext'
 import { NameChip } from '../../components/NameChip'
 import { ScreenHeader } from '../../components/ScreenHeader'
@@ -33,108 +34,118 @@ export function OrderScreen() {
   const [query, setQuery] = useState('')
 
   return (
-    <div className="bg-sand">
-      <ScreenHeader title="SOFA · Order" width={wideWidth}>
-        <NameChip />
-        <Link to="/catalog" className={headerLink}>
-          Catalog
-        </Link>
-      </ScreenHeader>
+    // Only here. The warning is about what you're about to add, so it belongs
+    // to the screen where things get added — and the confirm sheet it renders
+    // has to sit above both fixed bars, which is also here.
+    <AlreadyProvider>
+      <div className="bg-paper">
+        <ScreenHeader title="SOFA · Order" width={wideWidth}>
+          <NameChip />
+          <Link to="/catalog" className={headerLink}>
+            Catalog
+          </Link>
+        </ScreenHeader>
 
-      {/* One page scroll, not two. The route column scrolls the document as it
-          always has — which is what RouteView's sticky headers and ReorderList's
-          document-space measurements both assume — and the basket sticks beside
-          it rather than becoming a second scroller. */}
-      <div className={`mx-auto flex ${wideWidth} items-start`}>
-        {/* The rules are what stop the column reading as a stretched phone: on
-            a wide screen it's a sheet on the sand ground, with edges. */}
-        <main className="min-h-screen min-w-0 flex-1 bg-surface pb-24 md:border-x md:border-rule lg:pb-0">
-          {/* Switcher and search are one sticky block, not two stacked at
-              different offsets. It measures 106px — 44 + 60 of control, plus the
-              1px bottom border on each band — and anything sticky below has to
-              use that number, borders included. */}
-          <div className="sticky top-0 z-40">
-            <div className="flex border-b border-rule bg-surface">
-              {ORDER_VIEWS.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setView(option)}
-                  aria-current={view === option}
-                  className={tab(view === option)}
-                >
-                  {LABELS[option]}
-                </button>
-              ))}
+        {/* One page scroll, not two. The route column scrolls the document as it
+            always has — which is what RouteView's sticky headers and ReorderList's
+            document-space measurements both assume — and the basket sticks beside
+            it rather than becoming a second scroller. */}
+        <div className={`mx-auto flex ${wideWidth} items-start`}>
+          {/* The rules are what stop the column reading as a stretched phone: on
+              a wide screen it's a sheet on the paper ground, with edges. */}
+          <main className="min-h-screen min-w-0 flex-1 bg-surface pb-24 md:border-x md:border-line lg:pb-0">
+            {/* Switcher and search are one sticky block, not two stacked at
+                different offsets. It measures 106px — 44 + 60 of control, plus the
+                1px bottom border on each band — and anything sticky below has to
+                use that number, borders included. */}
+            <div className="lift sticky top-0 z-40">
+              <div className="flex border-b border-line bg-surface">
+                {ORDER_VIEWS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setView(option)}
+                    aria-current={view === option}
+                    className={tab(view === option)}
+                  >
+                    {LABELS[option]}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 border-b border-line bg-paper px-3 py-2">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Find an ingredient"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  className={input}
+                />
+                {query !== '' && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery('')}
+                    aria-label="Clear search"
+                    className="h-11 w-11 shrink-0 rounded-full border border-line bg-surface text-base text-ink-2 hover:border-wine"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 border-b border-rule bg-sand px-3 py-2">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Find an ingredient"
-                autoCapitalize="off"
-                autoCorrect="off"
-                className={input}
-              />
-              {query !== '' && (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  aria-label="Clear search"
-                  className="h-11 w-11 shrink-0 rounded-md border border-rule bg-surface text-base text-stone hover:border-ink"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-
-          {(error ?? basket.error) && (
-            <p className="border-b border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
-              {error ?? basket.error}
-            </p>
-          )}
-
-          {loading ? (
-            <p className="px-4 py-8 text-base text-stone">Loading…</p>
-          ) : view === 'route' ? (
-            <RouteView query={query} />
-          ) : view === 'dish' ? (
-            <DishView query={query} />
-          ) : (
-            <AllView query={query} />
-          )}
-        </main>
-
-        <BasketPane />
-      </div>
-
-      {/* The phone's basket: a bar you tap to leave the list. Above lg the pane
-          beside it says the same thing without taking a screen to do it. */}
-      <Link to="/basket" className="fixed inset-x-0 bottom-0 z-40 block bg-ink lg:hidden">
-        <div
-          className={`mx-auto flex ${wideWidth} items-center gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]`}
-        >
-          <span className="flex-1 text-base">
-            {basket.count === 0 ? (
-              <span className="text-sand/75">Basket empty</span>
-            ) : (
-              <>
-                {/* Apricot's other job: the accent, on anthracite rather than under it. */}
-                <span className="label text-base text-apricot tabular-nums">
-                  {basket.count} {basket.count === 1 ? 'item' : 'items'}
-                </span>
-                <span className="ml-2 text-sand/75">in the basket</span>
-              </>
+            {(error ?? basket.error) && (
+              <p className="border-b border-bad/30 bg-bad-bg px-4 py-3 text-base text-bad">
+                {error ?? basket.error}
+              </p>
             )}
-          </span>
-          <span className="label text-base text-sand">
-            {basket.count === 0 ? 'Open →' : 'Review →'}
-          </span>
+
+            {loading ? (
+              <p className="px-4 py-8 text-base text-ink-2">Loading…</p>
+            ) : view === 'route' ? (
+              <RouteView query={query} />
+            ) : view === 'dish' ? (
+              <DishView query={query} />
+            ) : (
+              <AllView query={query} />
+            )}
+          </main>
+
+          <BasketPane />
         </div>
-      </Link>
-    </div>
+
+        {/* The phone's basket: a bar you tap to leave the list. Above lg the pane
+            beside it says the same thing without taking a screen to do it. */}
+        <Link
+          to="/basket"
+          className="spotlight lift-2 fixed inset-x-0 bottom-0 z-40 block lg:hidden"
+        >
+          <div
+            className={`mx-auto flex ${wideWidth} items-center gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]`}
+          >
+            <span className="flex-1 text-base">
+              {basket.count === 0 ? (
+                <span className="text-cream/75">Basket empty</span>
+              ) : (
+                <>
+                  {/* Full-strength cream against the band's dimmed cream, which
+                      is the only thing on this bar that needs to be read at a
+                      glance. */}
+                  <span className="num text-base font-semibold text-cream">
+                    {basket.count} {basket.count === 1 ? 'item' : 'items'}
+                  </span>
+                  <span className="ml-2 text-cream/75">in the basket</span>
+                </>
+              )}
+            </span>
+            <span className="label text-base text-cream">
+              {basket.count === 0 ? 'Open →' : 'Review →'}
+            </span>
+          </div>
+        </Link>
+      </div>
+    </AlreadyProvider>
   )
 }

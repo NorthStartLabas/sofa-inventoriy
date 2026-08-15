@@ -1,54 +1,94 @@
 @import 'tailwindcss';
-/* Self-hosted: kitchen wifi is bad and a webfont request that hangs is a
-   screen of invisible text. Latin only, two weights, bundled with the app.
 
-   Jost stands in for futura-pt, which is what sofamaastricht.nl sets — Futura
-   is Adobe Fonts only and can't be bundled, and a runtime fetch is exactly the
-   thing above. Jost is the geometric substitute that gets closest. */
-@import '@fontsource/jost/latin-600.css';
-@import '@fontsource/jost/latin-700.css';
+/* Self-hosted: kitchen wifi is bad and a webfont request that hangs is a screen
+   of invisible text. Latin only, four faces, bundled with the app.
+
+   Inter for reading and Cormorant Garamond for display are what the SOFA
+   management dashboard sets (`src/app/globals.css` there, via next/font/google,
+   which also self-hosts). Same faces, same weights, fetched from nowhere. */
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
 
 /* ---------------------------------------------------------------------------
-   The restaurant's own two colours, taken from sofamaastricht.nl: sand over
-   anthracite. The site bands one against the other everywhere — its stylesheet
-   literally names the class `sand-antraciet` — so the app does the same: sand
-   grounds everything you read, anthracite takes the two bands that aren't
-   content, the header and the basket bar.
+   The dashboard's palette, taken as-is from
+   NorthStartLabas/sofamaastricht-dashboard `src/app/globals.css`: warm cream
+   paper, burgundy accent, warm-tinted elevation. Two apps for one restaurant
+   should not look like two restaurants.
 
-   Still three colours, because three is what stays legible under glare with wet
-   hands and no time: ink to read, apricot to mark, flag to warn. Apricot is the
-   site's own "claimed" colour — it fills the reserve button and the menu tabs —
-   which is exactly what a row in the basket is.
+   What did NOT come across is the sizing. The dashboard is read sitting down on
+   a laptop and uses 12–14px type and 32px controls; this is read standing up
+   with wet hands under a bright light. The 16px floor and the 44px tap target
+   are the two rules that keep this usable at all, and they don't bend for a
+   palette. (16px also happens to be what stops iOS zooming the page on focus.)
 
-   Apricot on white is 1.37, so it is never text and never a hairline on a light
-   ground. It has two jobs, both lifted from how the site uses it: a fill with
-   ink on top (9.67), or text on anthracite (9.67). Rails and rules stay ink.
+   One thing genuinely improves: wine is legible as text on paper (8.12), which
+   apricot never was (1.37 on white). The old "the accent can only ever be a
+   fill" rule was a workaround for a colour that couldn't be text, and it retires
+   with the colour.
+
+   Every pair below was measured. Worst pair in actual use is ink-2 on surface-2
+   at 4.89 — AA. `ink-3` is 2.65 on paper and is therefore **decorative only**:
+   never body text. `watch` is 3.47 and is large-text only.
    --------------------------------------------------------------------------- */
 @theme {
-  --color-sand: #fff7ee;
-  --color-surface: #ffffff;
-  --color-ink: #293133;
-  --color-stone: #5e5852;
-  --color-rule: #e7dccd;
-  --color-apricot: #fbd6a9;
-  --color-flag: #9e2b12;
-  --color-flag-wash: #f8e2dc;
+  --color-paper: #f5f0e8;
+  --color-surface: #fffdf9;
+  --color-surface-2: #efe9df;
 
-  --font-display: 'Jost', ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #1f1a15;
+  --color-ink-2: #6c6357;
+  /* Decorative only — 2.65 on paper. Not for anything anyone has to read. */
+  --color-ink-3: #9c9486;
+
+  --color-line: #e7dece;
+  --color-line-2: #d8cdbb;
+
+  --color-wine: #7a2e3a;
+  --color-wine-ink: #5e2230;
+  --color-cream: #f3e9d8;
+
+  --color-good: #3f6b4c;
+  --color-good-bg: #eef3ec;
+  --color-watch: #a8772a;
+  --color-watch-bg: #f6efe1;
+  --color-bad: #a23b2e;
+  --color-bad-bg: #f6e9e5;
+
+  --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+:root {
+  /* The signature gradient. On the dashboard it's a tile that breaks the calm
+     cream field; here it's the two bands that aren't content — the screen
+     header and the basket bar. Same job: this part is not the list. */
+  --grad-spotlight: radial-gradient(125% 125% at 0% 0%, #9a4150 0%, #6f2734 46%, #491f2a 100%);
+
+  /* Warm-tinted elevation, straight from the dashboard. */
+  --shadow-1: 0 1px 2px rgba(74, 48, 32, 0.04), 0 10px 26px -18px rgba(74, 48, 32, 0.12);
+  --shadow-2: 0 2px 4px rgba(74, 48, 32, 0.05), 0 18px 40px -22px rgba(74, 48, 32, 0.18);
+  --shadow-spot: 0 22px 55px -24px rgba(94, 34, 48, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
+  color-scheme: light;
 }
 
 html {
   /* iOS: don't let landscape rotation inflate our carefully sized text. */
   -webkit-text-size-adjust: 100%;
+  background: var(--color-paper);
 }
 
 body {
   margin: 0;
-  /* The top inset belongs to ScreenHeader, which is anthracite — painting it
-     here would leave a sand strip above a dark band on a notched phone. */
-  background: var(--color-sand);
+  /* The top inset belongs to ScreenHeader, which is the dark band — painting it
+     here would leave a cream strip above it on a notched phone. */
+  background: var(--color-paper);
   color: var(--color-ink);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
+  /* Inter's bespoke character variants — the dashboard's body voice, verbatim. */
+  font-feature-settings: 'cv01', 'cv05', 'cv09', 'cv11', 'ss03', 'ss07', 'dlig';
   -webkit-font-smoothing: antialiased;
 }
 
@@ -71,16 +111,70 @@ button:disabled {
 }
 
 /* The station label: caps and tracked, the way a rack or a shelf gets labelled.
-   The tracking is the site's own — .1em, the same as its buttons. */
+   The dashboard calls this `.wordmark` and tracks it .16em; same face, same
+   tracking, still uppercase because what it labels is a physical shelf. */
 .label {
   font-family: var(--font-display);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.16em;
+}
+
+/* A field inside a label is not part of the label. Preflight gives form controls
+   `font: inherit`, so a nested input picked up the caps, the tracking and the
+   display face — the name box in the header has been rendering as a shelf label
+   since the day .label was written, and only became obvious in a serif. */
+.label :is(input, textarea, select) {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Numbers stay in the body face. Cormorant's x-height is small and its figures
+   are old-style, so a count set in it reads a size or two down from the 16px it
+   actually is — which is the one thing this app doesn't allow. The dashboard
+   keeps its numerals in Inter for the same reason. */
+.label .num {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  letter-spacing: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The poster headline, from the dashboard's `.page-title`. Sentence case and
+   tight — this is a cover, not a label, and the two shouldn't look alike. */
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 0.95;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The two bands that aren't content. Cream on the gradient runs 5.38 at its
+   lightest corner to 11.54 at its darkest, so text sits anywhere on it. */
+.spotlight {
+  background: var(--grad-spotlight);
+  color: var(--color-cream);
+}
+
+/* Lifted off the paper: the sticky control block, a popover, a sheet. The
+   shadow is what says the list is passing underneath rather than stopping. */
+.lift {
+  box-shadow: var(--shadow-1);
+}
+
+.lift-2 {
+  box-shadow: var(--shadow-2);
 }
 
 /* Keyboard focus has to be visible without being loud enough to read as an
-   error mid-service. Ink rather than the accent — apricot outlines vanish. */
+   error mid-service. Ink rather than the accent — at 15.21 on paper it is the
+   one colour here that cannot be missed or mistaken for a warning. */
 :focus-visible {
   outline: 2px solid var(--color-ink);
   outline-offset: 2px;

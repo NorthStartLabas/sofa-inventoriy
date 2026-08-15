@@ -19,7 +19,7 @@ export function CatalogScreen() {
   const [tab, setTab] = useState<Tab>('Ingredients')
 
   return (
-    <div className="bg-sand">
+    <div className="bg-paper">
       <ScreenHeader
         title="Catalog"
         leading={
@@ -38,8 +38,8 @@ export function CatalogScreen() {
           so a grid, or a pane with its own scrollbar, breaks dragging in a way
           that only shows up when someone tries to reorder the route. Wider is
           safe here; re-flowed is not. */}
-      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface md:border-x md:border-rule`}>
-        <div className="sticky top-0 z-40 flex border-b border-rule bg-surface">
+      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface md:border-x md:border-line`}>
+        <div className="lift sticky top-0 z-40 flex border-b border-line bg-surface">
           {TABS.map((t) => (
             <button
               key={t}
@@ -58,13 +58,13 @@ export function CatalogScreen() {
             z-50 puts it over the section headers, which are sticky at the same
             offset — when both want the band, the error wins. */}
         {store.error && (
-          <p className="sticky top-[45px] z-50 border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
+          <p className="sticky top-[45px] z-50 border-y border-bad/30 bg-bad-bg px-4 py-3 text-base text-bad">
             {store.error}
           </p>
         )}
 
         {store.loading ? (
-          <p className="px-4 py-8 text-base text-stone">Loading…</p>
+          <p className="px-4 py-8 text-base text-ink-2">Loading…</p>
         ) : (
           <>
             {tab === 'Ingredients' && <IngredientsTab store={store} />}

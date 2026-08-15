@@ -34,7 +34,7 @@ export function HistoryScreen() {
   }, [load])
 
   return (
-    <div className="bg-sand">
+    <div className="bg-paper">
       <ScreenHeader
         title="History"
         leading={
@@ -48,17 +48,17 @@ export function HistoryScreen() {
         </Link>
       </ScreenHeader>
 
-      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface pb-16 md:border-x md:border-rule`}>
+      <div className={`mx-auto min-h-screen ${columnWidth} bg-surface pb-16 md:border-x md:border-line`}>
         {error && (
-          <p className="border-y border-flag/30 bg-flag-wash px-4 py-3 text-base text-flag">
+          <p className="border-y border-bad/30 bg-bad-bg px-4 py-3 text-base text-bad">
             {error}
           </p>
         )}
 
         {orders === null ? (
-          <p className="px-4 py-8 text-base text-stone">Loading…</p>
+          <p className="px-4 py-8 text-base text-ink-2">Loading…</p>
         ) : orders.length === 0 ? (
-          <p className="px-4 py-8 text-base text-stone">
+          <p className="px-4 py-8 text-base text-ink-2">
             No orders sent yet. They show up here once you finish one.
           </p>
         ) : (
@@ -68,19 +68,19 @@ export function HistoryScreen() {
               const total = order.order_lines.length
 
               return (
-                <li key={order.id} className="border-b border-rule">
+                <li key={order.id} className="border-b border-line">
                   <button
                     type="button"
                     onClick={() => setExpanded(open ? null : order.id)}
-                    className="flex min-h-[44px] w-full items-center gap-2 px-4 py-2 text-left hover:bg-sand"
+                    className="flex min-h-[44px] w-full items-center gap-2 px-4 py-2 text-left hover:bg-paper"
                   >
                     <span className="flex-1 text-base font-medium tabular-nums text-ink">
                       {sentAtLabel(order.sent_at)}
                       {order.sent_by && (
-                        <span className="ml-2 font-normal text-stone">{order.sent_by}</span>
+                        <span className="ml-2 font-normal text-ink-2">{order.sent_by}</span>
                       )}
                     </span>
-                    <span className="label text-base text-stone tabular-nums">
+                    <span className="num text-base text-ink-2">
                       {total} {total === 1 ? 'item' : 'items'}
                     </span>
                   </button>
@@ -102,7 +102,7 @@ export function HistoryScreen() {
                           <span className="flex-1 text-ink">{line.ingredient_name}</span>
                           <span className="tabular-nums">
                             {formatQuantity(line.quantity)}
-                            {line.unit && <span className="ml-1 text-stone">{line.unit}</span>}
+                            {line.unit && <span className="ml-1 text-ink-2">{line.unit}</span>}
                           </span>
                         </li>
                       ))}
