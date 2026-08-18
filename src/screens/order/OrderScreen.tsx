@@ -39,8 +39,16 @@ export function OrderScreen() {
     // has to sit above both fixed bars, which is also here.
     <AlreadyProvider>
       <div className="bg-paper">
-        <ScreenHeader title="SOFA · Order" width={wideWidth}>
+        {/* "SOFA", not "SOFA · Order" — the Route/Dish/All row directly beneath
+            already says which list you're looking at, and on a 390px band that
+            word was being spent to repeat it. What it buys is History, which
+            until now could only be reached through the basket and so was, in
+            practice, the screen you landed on after pressing Finish. */}
+        <ScreenHeader title="SOFA" width={wideWidth}>
           <NameChip />
+          <Link to="/history" className={headerLink}>
+            History
+          </Link>
           <Link to="/catalog" className={headerLink}>
             Catalog
           </Link>

@@ -104,7 +104,7 @@ export function BasketScreen() {
               <ul>
                 {group.lines.map((line) => (
                   <li
-                    key={line.ingredientId}
+                    key={line.key}
                     className="flex items-center gap-2 border-b border-line bg-surface py-1.5 pr-2 pl-4"
                   >
                     <div className="min-w-0 flex-1">

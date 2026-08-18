@@ -108,6 +108,25 @@ quantity was simply already there. Now the only way to see it is to be told, so 
 something somebody else ordered today, or has waiting in their basket right now, asks first.
 It asks once per ingredient, on the way up from zero, and remembers the answer.
 
+### Week three
+
+**History is somewhere you can go.** It's a link in the Order screen header now, instead of only
+being the screen you land on after pressing Finish. Orders are grouped under Today / Yesterday /
+Fri 15 Aug, and **Show older** pages further back.
+
+**A sent order can still be sent.** Open any past order and it lays out per supplier, with the same
+Copy and WhatsApp buttons the basket has. The old buttons sat to the left of Finish, so pressing
+Finish first was easy to do and impossible to undo — the list was recorded and the messages never
+went. Now the list outlives the basket.
+
+A re-sent order carries the date it was *made*, and says what it said at the time: renaming an
+ingredient never rewrites a past order. Where it goes is worked out fresh, though — if that stock
+has moved to another supplier since, the message goes to the new one.
+
+**Mise en place: asked for, not built.** The kitchen doesn't weigh anything and doesn't work off a
+daily list — somebody notices one bak left, or has ten minutes spare. Nothing that was sketched beat
+paper, so paper keeps it for now. Notes on the shape that might work are in `CLAUDE.md`.
+
 **The theme is the management dashboard's**, copied from
 `NorthStartLabas/sofamaastricht-dashboard`: cream paper, burgundy accent, Cormorant Garamond
 over Inter. Two apps for one restaurant shouldn't look like two restaurants. What didn't come

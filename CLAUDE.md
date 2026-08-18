@@ -323,8 +323,9 @@ Both faces are bundled via `@fontsource` latin subsets and **never fetched at ru
 
 **Numbers never go in the serif.** Cormorant's x-height is small and its figures are old-style, so
 a count set in it reads a size or two below the 16px it actually is. `.label .num` puts it back in
-Inter, and standalone counts use `.num` directly. For the same reason `.label :is(input, textarea,
-select)` resets nested form controls — Preflight gives them `font: inherit`, so the name field in
+Inter, and standalone counts use `.num` directly — except a date *inside* a label, which has to be
+split so only its digits change face (`DayHeading` in `HistoryScreen`, for `Fri 15 Aug`). For the
+same reason `.label :is(input, textarea, select)` resets nested form controls — Preflight gives them `font: inherit`, so the name field in
 the header had been rendering as tracked caps since the day `.label` was written.
 
 **Shapes** follow the dashboard: 18px cards (popovers, the confirm sheet), 13px insets (fields),
@@ -372,11 +373,16 @@ never two implementations. `finish()` lives there because its ordering is load-b
 first, and `flush()` *rejects* rather than letting a short order go out — and a second copy is how
 one copy loses the guard.
 
+The clipboard half is **not** in there: it's `src/lib/useCopy.ts`, because History needs the same
+"Copied" flash and must not reach for `useOrderSend` to get it — that would mount basket state, and
+a reachable `finish()`, on a screen with no basket.
+
 **The Catalog stays one column at every width, on purpose.** `ReorderList` measures every row edge
 once at drag start and autoscrolls `window`; a grid, or a pane with its own scrollbar, breaks
 dragging in a way that only surfaces when someone tries to reorder the route. Widening is safe;
-re-flowing is not. `HistoryScreen`'s expanded lines are the one exception (`lg:columns-2`) — static
-text with nothing draggable in it.
+re-flowing is not. `HistoryScreen`'s expanded orders are the one exception (`lg:columns-2`) — static
+text with nothing draggable in it. The columns break between *supplier groups*, not between lines:
+each group carries `break-inside-avoid`, or a heading gets orphaned from the list it names.
 
 **Hover states exist but are never the only signal.** Tailwind v4 wraps every `hover:` in
 `@media (hover: hover)`, so no touch device inherits one and gets stuck showing it after a tap. The
@@ -390,9 +396,37 @@ Phases 1–6 are committed. Still unbuilt from the phase-6 list is the **locatio
 missing-item hints ("ordered in 3 of the last 10") were overtaken by the already-ordered warning,
 which answers the same question with today's data instead of a ten-order average.
 
+**Mise en place was asked for and deliberately deferred** (2026-08-18). Worth knowing before
+designing it: the kitchen doesn't weigh anything and doesn't work to a daily list. Prep is
+opportunistic — somebody sees one bak left, or has ten minutes — so a par sheet in kilos is useless
+here and a daily checklist is just the paper again. The shape that would fit is a live board counted
+in *containers* (the catalog already speaks that language: Bak, Pot, Fles, Emmer), where taking the
+last one is a tap and whatever is below its number is the list. Not built, because nobody could yet
+say what a good list looks like, and paper still works. Don't start it from the schema.
+
 Ordering flow, end to end: Order screen (walk the route, step quantities) → `/basket` (grouped by
 supplier, WhatsApp/copy export, Finish) → `/history`. `src/lib/orderText.ts` owns the grouping and
 the message format; WhatsApp's only formatting is `*bold*`. Each person sends their own order.
+
+**History is a screen you go to, not a receipt you land on** (2026-08-18). It is linked from the
+Order screen header, grouped by day (`src/lib/orderDays.ts` — `Today` / `Yesterday` / `Fri 15 Aug`,
+local day worked out on the device for the same reason `fetchOrderedToday` does it), and pages older
+orders in with `fetchOrders(limit, before)`. That's **keyset**, not `.range()`: an order somebody
+else sends while History is open would shift an offset window and silently skip a row.
+
+Any past order opens into the same per-supplier groups the basket has, with the same Copy and
+WhatsApp buttons. That is the point of it — the export buttons on the Basket screen sit to the left
+of Finish, so sending the messages *after* pressing Finish was an easy mistake and used to be an
+unrecoverable one. The copy mark has to be scoped per order (`${order.id}:${group.key}`); several
+orders are on screen at once and two of them can share a group key.
+
+**One grouper, two adapters.** `groupLines` is shared; `groupBasket` and `groupOrder` feed it.
+`groupOrder` takes each line's **own** `ingredient_name`/`unit` snapshot and uses `ingredient_id`
+*only* for placement — which supplier heading it sits under, and where it falls in the route. The
+two halves disagree on purpose: renaming an ingredient must never rewrite a past order (see 0004),
+but a forgotten order re-sent today should go to whoever sells that stock *now*. A line whose
+ingredient was deleted outright has neither, and lands under `Elsewhere`, last. Don't "tidy" the
+name back into a catalog lookup.
 
 **Grouping is two passes, and there is no "No supplier" pile.** `groupBasket` puts anything with a
 supplier in a supplier group (alphabetical, first) and everything else in a group per *location*

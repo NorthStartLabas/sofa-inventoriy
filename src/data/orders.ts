@@ -83,18 +83,32 @@ export async function fetchOrderedToday(): Promise<Map<string, SentToday[]>> {
   return map
 }
 
-/** Newest first. order_lines comes back embedded — one request, not one per order. */
-export async function fetchOrders(limit = 25): Promise<Order[]> {
-  const { data, error } = await supabase
+/**
+ * Newest first. order_lines comes back embedded — one request, not one per
+ * order.
+ *
+ * `before` pages backwards: pass the `sent_at` of the oldest row you already
+ * have. Keyset rather than `.range()` on purpose — an order sent by somebody
+ * else while History is open shifts an offset window by one, and the next page
+ * then silently skips a row. `orders_sent_at_idx` is already `(sent_at desc)`,
+ * so this costs nothing.
+ */
+export async function fetchOrders(limit = 25, before?: string): Promise<Order[]> {
+  let query = supabase
     .from('orders')
     .select('*, order_lines(*)')
     .order('sent_at', { ascending: false })
     // Without this the lines come back in whatever order Postgres chose, which
-    // reshuffles between reads. Route order would suit the room better, but
-    // order_lines has no position column — and History is where you look one
-    // thing up, which is what alphabetical is for.
+    // reshuffles between reads. `groupOrder` re-sorts what it can into route
+    // order, so this is really for the rows it can't place — a line whose
+    // ingredient has been deleted has no shelf, and alphabetical is the only
+    // stable order left for it.
     .order('ingredient_name', { referencedTable: 'order_lines' })
     .limit(limit)
+
+  if (before) query = query.lt('sent_at', before)
+
+  const { data, error } = await query
   if (error) throw new Error(error.message)
   return data as Order[]
 }

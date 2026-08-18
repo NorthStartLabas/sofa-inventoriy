@@ -4,6 +4,7 @@ import { useCatalogStore } from '../data/catalogContext'
 import { finishOrder } from '../data/orders'
 import { useProfile } from '../auth/profileContext'
 import { groupBasket, orderText } from '../lib/orderText'
+import { useCopy } from '../lib/useCopy'
 import { useBasket } from './basketContext'
 
 /**
@@ -26,34 +27,28 @@ export function useOrderSend() {
 
   const [confirming, setConfirming] = useState(false)
   const [sending, setSending] = useState(false)
-  const [failure, setFailure] = useState<string | null>(null)
-  const [copied, setCopied] = useState<string | null>(null)
+  const [sendFailure, setSendFailure] = useState<string | null>(null)
+  // The "Copied" flash is `useCopy`'s, so History gets the same behaviour
+  // without reaching in here for it.
+  const { copied, error: copyError, copy } = useCopy()
+
+  // A send that failed matters more than a copy that failed a minute ago.
+  const failure = sendFailure ?? copyError
 
   const groups = useMemo(() => groupBasket(basket.items, catalog), [basket.items, catalog])
   const text = useMemo(() => orderText(groups), [groups])
   const lineCount = groups.reduce((sum, group) => sum + group.lines.length, 0)
 
-  /** `mark` is which button said "Copied" — the whole order, or one group. */
-  async function copy(what: string, mark: string) {
-    try {
-      await navigator.clipboard.writeText(what)
-      setCopied(mark)
-      window.setTimeout(() => setCopied(null), 2000)
-    } catch {
-      setFailure('Could not copy. Long-press the list to select it instead.')
-    }
-  }
-
   async function finish() {
     setSending(true)
-    setFailure(null)
+    setSendFailure(null)
     try {
       await basket.flush()
       await finishOrder(name || null)
       basket.clear()
       navigate('/history')
     } catch (e) {
-      setFailure(e instanceof Error ? e.message : 'Could not finish that order.')
+      setSendFailure(e instanceof Error ? e.message : 'Could not finish that order.')
       setConfirming(false)
     } finally {
       setSending(false)
